@@ -407,9 +407,11 @@
     .pkg-cta {
       display: block; text-align: center; padding: 0.9rem;
       border-radius: 8px; font-weight: 700; text-decoration: none;
-      font-size: 0.95rem; position: relative; z-index: 2;
+      font-size: 0.95rem; position: relative; z-index: 2; cursor: pointer;
+      font-family: inherit; width: 100%;
       transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease, border-color var(--t2) ease, color var(--t2) ease;
     }
+    .pkg-cta:disabled { cursor: not-allowed; }
     .pkg:not(.featured) .pkg-cta { border: 1px solid var(--border-dim); color: var(--text); }
     .pkg:not(.featured) .pkg-cta:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
@@ -643,7 +645,7 @@
           <li><span class="chk">✓</span> Full source code included</li>
           <li><span class="chk">✓</span> 30-day email support</li>
         </ul>
-        <a href="#contact" class="pkg-cta">Get Started</a>
+        <button class="pkg-cta" data-package="starter">Get Started</button>
       </div>
 
       <div class="pkg featured reveal">
@@ -662,7 +664,7 @@
           <li><span class="chk">✓</span> Daily summary emails</li>
           <li><span class="chk">✓</span> 60-day support</li>
         </ul>
-        <a href="#contact" class="pkg-cta">Get Started</a>
+        <button class="pkg-cta" data-package="pro">Get Started</button>
       </div>
 
       <div class="pkg reveal">
@@ -847,6 +849,37 @@
 </footer>
 
 <script>
+  // ── Stripe Checkout ───────────────────────────────────────
+  document.querySelectorAll('.pkg-cta[data-package]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pkg = btn.dataset.package;
+      const original = btn.textContent;
+      btn.textContent = 'Redirecting…';
+      btn.disabled = true;
+      btn.style.opacity = '0.75';
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ package: pkg }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Checkout failed');
+        }
+      } catch (err) {
+        btn.textContent = 'Error — try again';
+        btn.style.opacity = '1';
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.disabled = false;
+        }, 2500);
+      }
+    });
+  });
+
   // ── Hamburger ──────────────────────────────────────────────
   const hamburger = document.querySelector('.hamburger');
   const mobileNav = document.querySelector('.mobile-nav');

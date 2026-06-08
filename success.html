@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Successful — AutoFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080b12; --accent: #FF6B00; --gold: #FFD700;
+      --text: #e8eaf0; --muted: #8892a4; --grid-line: rgba(255,255,255,0.022);
+      --spring: cubic-bezier(.34,1.56,.64,1);
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Hanken Grotesk', sans-serif;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 2rem;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .card {
+      background: #0d1120; border: 1px solid rgba(255,215,0,0.28);
+      border-radius: 20px; padding: 3.5rem 3rem; max-width: 520px; width: 100%;
+      position: relative; z-index: 1;
+      box-shadow: 0 4px 48px rgba(255,215,0,0.1), 0 0 0 1px rgba(255,255,255,0.04);
+      animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes checkPop {
+      0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+      60%  { transform: scale(1.15) rotate(4deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .check-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold) 0%, #ffb300 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 2rem;
+      box-shadow: 0 8px 32px rgba(255,215,0,0.35);
+      animation: checkPop 0.55s var(--spring) 0.3s both;
+    }
+    h1 {
+      font-size: 2rem; font-weight: 800; color: #fff;
+      letter-spacing: -0.02em; margin-bottom: 0.75rem;
+    }
+    h1 span {
+      background: linear-gradient(135deg, var(--gold), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    p { color: var(--muted); font-size: 0.95rem; line-height: 1.75; margin-bottom: 1rem; }
+    .steps {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 1.4rem 1.6rem; margin: 1.8rem 0;
+      text-align: left;
+    }
+    .step {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.875rem; color: var(--text);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,107,0,0.15); border: 1px solid rgba(255,107,0,0.35);
+      color: var(--accent); font-size: 0.72rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    }
+    .btn {
+      display: inline-block; background: var(--accent); color: #fff;
+      padding: 0.85rem 2.2rem; border-radius: 8px; font-weight: 700;
+      text-decoration: none; font-size: 0.95rem;
+      box-shadow: 0 4px 20px rgba(255,107,0,0.35);
+      transition: transform 0.22s var(--spring), box-shadow 0.22s ease;
+    }
+    .btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 32px rgba(255,107,0,0.5); }
+    .logo { font-size: 1.1rem; font-weight: 800; color: #fff; text-decoration: none; margin-bottom: 2rem; display: block; }
+    .logo span { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a class="logo" href="/">Auto<span>Flow</span></a>
+    <div class="check-circle">✓</div>
+    <h1>You're <span>In.</span></h1>
+    <p>Payment confirmed. We'll reach out to <strong style="color:#fff">your email within 24 hours</strong> to kick off your onboarding call.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <span>Check your inbox — confirmation + receipt on the way</span>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <span>30-minute onboarding call to map out your niche, targets, and offer</span>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <span>We build, test, and deploy your agent within 3–5 business days</span>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <span>Agent goes live — you receive full source code and access</span>
+      </div>
+    </div>
+    <a href="/" class="btn">Back to AutoFlow →</a>
+  </div>
+</body>
+</html>
