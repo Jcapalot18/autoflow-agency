@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoFlow — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:         #080b12;
+      --bg2:        #0d1120;
+      --bg3:        #111827;
+      --accent:     #FF6B00;
+      --accent-dim: rgba(255,107,0,0.10);
+      --border:     rgba(255,107,0,0.16);
+      --border-dim: rgba(255,255,255,0.07);
+      --text:       #e8eaf0;
+      --muted:      #8892a4;
+      --gold:       #FFD700;
+      --gold-dim:   rgba(255,215,0,0.08);
+      --gold-border:rgba(255,215,0,0.25);
+      --green:      #00d46a;
+      --green-dim:  rgba(0,212,106,0.1);
+      --red:        #ff4444;
+      --red-dim:    rgba(255,68,68,0.1);
+      --yellow:     #f5c400;
+      --yellow-dim: rgba(245,196,0,0.1);
+      --grid-line:  rgba(255,255,255,0.022);
+      --spring:     cubic-bezier(.34,1.56,.64,1);
+      --ease:       cubic-bezier(.22,.68,0,1.2);
+      --t2:         0.24s;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Hanken Grotesk', sans-serif;
+      min-height: 100vh; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ── NAV ──────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 2rem;
+      background: rgba(8,11,18,0.92); backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border-dim);
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 800; color: #fff; text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-badge {
+      background: var(--accent-dim); color: var(--accent);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.2rem 0.65rem; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-home {
+      color: var(--muted); text-decoration: none; font-size: 0.85rem;
+      font-weight: 500; transition: color var(--t2);
+    }
+    .nav-home:hover { color: var(--accent); }
+
+    /* ── LAYOUT ───────────────────────────────────────────────── */
+    main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 4rem; position: relative; z-index: 1; }
+
+    /* ── STATS ROW ────────────────────────────────────────────── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1rem; margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--bg2); border: 1px solid var(--border-dim);
+      border-radius: 12px; padding: 1.2rem 1.4rem;
+      transition: border-color var(--t2) ease, transform var(--t2) var(--spring);
+    }
+    .stat-card:hover { border-color: rgba(255,107,0,0.35); transform: translateY(-2px); }
+    .stat-label-sm { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 0.45rem; }
+    .stat-val { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+    .stat-val.orange { color: var(--accent); }
+    .stat-val.green  { color: var(--green); }
+    .stat-val.gold   { color: var(--gold); }
+    .stat-val.white  { color: #fff; }
+
+    /* ── SECTION HEADER ──────────────────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;
+    }
+    .section-title-sm {
+      font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: -0.015em;
+    }
+    .section-title-sm span { color: var(--accent); }
+    .btn-add {
+      display: flex; align-items: center; gap: 0.45rem;
+      background: var(--accent); color: #fff; border: none; padding: 0.5rem 1.1rem;
+      border-radius: 7px; font-weight: 700; font-size: 0.82rem; cursor: pointer;
+      font-family: inherit; transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease;
+      box-shadow: 0 4px 14px rgba(255,107,0,0.3);
+    }
+    .btn-add:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 6px 22px rgba(255,107,0,0.45); }
+
+    /* ── TABLE ────────────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--bg2); border: 1px solid var(--border-dim);
+      border-radius: 14px; overflow: hidden; margin-bottom: 2.5rem;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: rgba(255,255,255,0.03);
+      padding: 0.75rem 1.1rem; text-align: left;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--muted);
+      border-bottom: 1px solid var(--border-dim);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background var(--t2) ease;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td { padding: 0.85rem 1.1rem; font-size: 0.875rem; vertical-align: middle; }
+    .td-name { font-weight: 700; color: #fff; }
+    .td-muted { color: var(--muted); font-size: 0.82rem; }
+    .td-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+    /* Status pills */
+    .pill {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.22rem 0.65rem; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pill-active  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(0,212,106,0.25); }
+    .pill-active::before  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+    .pill-paused  { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245,196,0,0.25); }
+    .pill-paused::before  { background: var(--yellow); }
+    .pill-inactive{ background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,68,68,0.2); }
+    .pill-inactive::before{ background: var(--red); }
+    .pill-onboarding { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
+    .pill-onboarding::before { background: var(--gold); }
+
+    /* Package chips */
+    .pkg-chip {
+      display: inline-block; padding: 0.18rem 0.55rem; border-radius: 5px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .pkg-starter { background: rgba(255,107,0,0.12); color: var(--accent); border: 1px solid rgba(255,107,0,0.22); }
+    .pkg-pro     { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
+    .pkg-custom  { background: rgba(160,100,255,0.1); color: #b87dff; border: 1px solid rgba(160,100,255,0.25); }
+
+    /* Action buttons */
+    .btn-edit, .btn-del {
+      padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;
+      font-weight: 600; cursor: pointer; font-family: inherit; border: none;
+      transition: transform var(--t2) var(--spring), opacity var(--t2);
+    }
+    .btn-edit { background: rgba(255,255,255,0.06); color: var(--text); }
+    .btn-edit:hover { background: rgba(255,107,0,0.15); color: var(--accent); transform: scale(1.05); }
+    .btn-del  { background: rgba(255,68,68,0.08); color: var(--red); }
+    .btn-del:hover  { background: rgba(255,68,68,0.18); transform: scale(1.05); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 0.875rem;
+    }
+    .empty-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.4; }
+
+    /* ── MODAL ────────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--bg2); border: 1px solid var(--border-dim);
+      border-radius: 16px; padding: 2rem; width: 100%; max-width: 520px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      animation: modalIn 0.28s var(--ease) both;
+      max-height: 90vh; overflow-y: auto;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 1.5rem; }
+    .modal-title span { color: var(--accent); }
+    .field-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+    .field-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+    .field-input, .field-select, .field-textarea {
+      background: var(--bg); border: 1px solid var(--border-dim); border-radius: 8px;
+      color: var(--text); padding: 0.65rem 0.9rem; font-family: inherit;
+      font-size: 0.88rem; outline: none; width: 100%;
+      transition: border-color var(--t2) ease, box-shadow var(--t2) ease;
+    }
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
+    }
+    .field-select option { background: var(--bg2); }
+    .field-textarea { resize: vertical; min-height: 70px; }
+    .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel {
+      padding: 0.6rem 1.3rem; border-radius: 7px; font-weight: 600; font-size: 0.875rem;
+      cursor: pointer; font-family: inherit; background: rgba(255,255,255,0.05);
+      color: var(--muted); border: 1px solid var(--border-dim);
+      transition: color var(--t2), border-color var(--t2);
+    }
+    .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+    .btn-save {
+      padding: 0.6rem 1.5rem; border-radius: 7px; font-weight: 700; font-size: 0.875rem;
+      cursor: pointer; font-family: inherit; background: var(--accent); color: #fff;
+      border: none; box-shadow: 0 4px 14px rgba(255,107,0,0.3);
+      transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease;
+    }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,107,0,0.45); }
+
+    /* ── EXPORT ───────────────────────────────────────────────── */
+    .export-row { display: flex; gap: 0.6rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .btn-export {
+      padding: 0.45rem 1rem; border-radius: 7px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; border: 1px solid var(--border-dim);
+      background: rgba(255,255,255,0.04); color: var(--muted);
+      transition: color var(--t2), border-color var(--t2), background var(--t2);
+    }
+    .btn-export:hover { color: var(--text); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); }
+
+    /* ── MOBILE ───────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .modal-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      main { padding: 1.5rem 1rem 3rem; }
+      nav { padding: 0.85rem 1rem; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      thead th:nth-child(3), tbody td:nth-child(3),
+      thead th:nth-child(4), tbody td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav>
+  <div style="display:flex;align-items:center;gap:0.75rem">
+    <a class="nav-logo" href="/">Auto<span>Flow</span></a>
+    <span class="nav-badge">Dashboard</span>
+  </div>
+  <div class="nav-right">
+    <a href="/" class="nav-home">← Back to site</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ── STATS ────────────────────────────────────────────────── -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="stat-label-sm">Total Agents</div>
+      <div class="stat-val orange" id="statTotalAgents">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label-sm">Active Agents</div>
+      <div class="stat-val green" id="statActiveAgents">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label-sm">Businesses</div>
+      <div class="stat-val white" id="statBusinesses">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label-sm">Pro / Custom Clients</div>
+      <div class="stat-val gold" id="statPremium">0</div>
+    </div>
+  </div>
+
+  <!-- ── AGENTS TABLE ─────────────────────────────────────────── -->
+  <div class="section-header">
+    <div class="section-title-sm">Agents <span id="agentCount"></span></div>
+    <button class="btn-add" onclick="openAgentModal()">+ Add Agent</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Agent Name</th>
+          <th>Role / Type</th>
+          <th>Business</th>
+          <th>Schedule</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="agentsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ── BUSINESSES TABLE ─────────────────────────────────────── -->
+  <div class="section-header">
+    <div class="section-title-sm">Businesses <span id="bizCount"></span></div>
+    <button class="btn-add" onclick="openBizModal()">+ Add Business</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Niche</th>
+          <th>Package</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Contact</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="bizBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ── EXPORT ───────────────────────────────────────────────── -->
+  <div class="export-row">
+    <button class="btn-export" onclick="exportCSV('agents')">↓ Export Agents CSV</button>
+    <button class="btn-export" onclick="exportCSV('businesses')">↓ Export Businesses CSV</button>
+  </div>
+
+</main>
+
+<!-- ── AGENT MODAL ─────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="agentModal">
+  <div class="modal">
+    <div class="modal-title" id="agentModalTitle">New <span>Agent</span></div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Agent Name</div>
+        <input class="field-input" id="a_name" placeholder="e.g. Miami Outreach Bot" />
+      </div>
+      <div class="field-group">
+        <div class="field-label">Type / Role</div>
+        <select class="field-select" id="a_type">
+          <option value="Outreach Agent">Outreach Agent</option>
+          <option value="Follow-Up Sequence">Follow-Up Sequence</option>
+          <option value="Auto-Reply Bot">Auto-Reply Bot</option>
+          <option value="Full Automation">Full Automation</option>
+          <option value="Lead Gen">Lead Gen</option>
+          <option value="CRM Sync">CRM Sync</option>
+          <option value="Custom">Custom</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Business / Client</div>
+        <input class="field-input" id="a_business" placeholder="e.g. Marcus R. — Insurance" />
+      </div>
+      <div class="field-group">
+        <div class="field-label">Schedule</div>
+        <input class="field-input" id="a_schedule" placeholder="e.g. Daily 8am, Always On" />
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Status</div>
+        <select class="field-select" id="a_status">
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Start Date</div>
+        <input class="field-input" id="a_date" type="date" />
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Notes</div>
+      <textarea class="field-textarea" id="a_notes" placeholder="Targeting niche, cities, email volume, any known issues..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('agentModal')">Cancel</button>
+      <button class="btn-save" onclick="saveAgent()">Save Agent</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BUSINESS MODAL ──────────────────────────────────────────── -->
+<div class="modal-backdrop" id="bizModal">
+  <div class="modal">
+    <div class="modal-title" id="bizModalTitle">New <span>Business</span></div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Business Name</div>
+        <input class="field-input" id="b_name" placeholder="e.g. Marcus R. Insurance Agency" />
+      </div>
+      <div class="field-group">
+        <div class="field-label">Owner / Contact Name</div>
+        <input class="field-input" id="b_owner" placeholder="e.g. Marcus R." />
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Niche / Industry</div>
+        <input class="field-input" id="b_niche" placeholder="e.g. Insurance Agency" />
+      </div>
+      <div class="field-group">
+        <div class="field-label">Location</div>
+        <input class="field-input" id="b_location" placeholder="e.g. Miami, FL" />
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Package</div>
+        <select class="field-select" id="b_package">
+          <option value="starter">Starter — $1,500</option>
+          <option value="pro">Pro — $3,000</option>
+          <option value="custom">Custom — $5,000+</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Status</div>
+        <select class="field-select" id="b_status">
+          <option value="active">Active</option>
+          <option value="onboarding">Onboarding</option>
+          <option value="paused">Paused</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="field-group">
+        <div class="field-label">Email</div>
+        <input class="field-input" id="b_email" type="email" placeholder="client@email.com" />
+      </div>
+      <div class="field-group">
+        <div class="field-label">Start Date</div>
+        <input class="field-input" id="b_date" type="date" />
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Notes</div>
+      <textarea class="field-textarea" id="b_notes" placeholder="Agent assigned, goals, special requirements..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('bizModal')">Cancel</button>
+      <button class="btn-save" onclick="saveBiz()">Save Business</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data layer (localStorage) ──────────────────────────────────
+const AGENTS_KEY = 'af_agents';
+const BIZ_KEY    = 'af_businesses';
+
+const DEFAULT_AGENTS = [
+  { id: '1', name: 'Miami Outreach Bot', type: 'Outreach Agent', business: 'Marcus R. — Insurance Agency', schedule: 'Daily 8am', status: 'active', date: '2026-01-15', notes: '400 emails/week, Google Maps Miami + Fort Lauderdale, insurance niche' },
+  { id: '2', name: 'Insurance Follow-Up Seq', type: 'Follow-Up Sequence', business: 'Marcus R. — Insurance Agency', schedule: 'Day 3 & Day 7', status: 'active', date: '2026-01-15', notes: 'Day 3 soft follow-up, Day 7 final nudge' },
+  { id: '3', name: 'Brooklyn RE Outreach', type: 'Outreach Agent', business: 'Daniela T. — Real Estate', schedule: 'Daily 7am', status: 'active', date: '2026-02-01', notes: 'Targets off-market property owners, Brooklyn + Queens' },
+  { id: '4', name: 'RE Auto-Reply Bot', type: 'Auto-Reply Bot', business: 'Daniela T. — Real Estate', schedule: 'Always On', status: 'active', date: '2026-02-01', notes: 'Qualifies inbound leads, books calls automatically' },
+  { id: '5', name: 'RE Follow-Up Seq', type: 'Follow-Up Sequence', business: 'Daniela T. — Real Estate', schedule: 'Day 3 & Day 7', status: 'active', date: '2026-02-01', notes: 'Closed 3 deals in first month' },
+  { id: '6', name: 'Philly Agency Outreach', type: 'Outreach Agent', business: 'James K. — Digital Marketing', schedule: 'Daily 9am', status: 'active', date: '2026-03-10', notes: 'Targets SMBs in Philly area, marketing services pitch' },
+  { id: '7', name: 'Agency Follow-Up Seq', type: 'Follow-Up Sequence', business: 'James K. — Digital Marketing', schedule: 'Day 3 & Day 7', status: 'active', date: '2026-03-10', notes: 'Day 7 closed 3 deals that would have gone cold' },
+];
+
+const DEFAULT_BUSINESSES = [
+  { id: '1', name: 'Marcus R. Insurance Agency', owner: 'Marcus R.', niche: 'Insurance Agency', location: 'Miami, FL', package: 'starter', status: 'active', email: '', date: '2026-01-15', notes: '2 agents deployed. 6 calls booked in first week.' },
+  { id: '2', name: 'Daniela T. Real Estate', owner: 'Daniela T.', niche: 'Real Estate Investor', location: 'Brooklyn, NY', package: 'pro', status: 'active', email: '', date: '2026-02-01', notes: '3 agents. Replaced $8k/month sales team with $3k one-time build.' },
+  { id: '3', name: 'James K. Digital Marketing', owner: 'James K.', niche: 'Digital Marketing Agency', location: 'Philadelphia, PA', package: 'starter', status: 'active', email: '', date: '2026-03-10', notes: '2 agents. Follow-up bot closed 3 deals in first month.' },
+];
+
+function load(key, defaults) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : defaults;
+  } catch { return defaults; }
+}
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+let agents     = load(AGENTS_KEY, DEFAULT_AGENTS);
+let businesses = load(BIZ_KEY, DEFAULT_BUSINESSES);
+
+// ── Render helpers ─────────────────────────────────────────────
+function statusPill(s) {
+  const map = {
+    active:     ['Active',      'pill-active'],
+    paused:     ['Paused',      'pill-paused'],
+    inactive:   ['Inactive',    'pill-inactive'],
+    onboarding: ['Onboarding',  'pill-onboarding'],
+  };
+  const [label, cls] = map[s] || ['Unknown', 'pill-inactive'];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function pkgChip(p) {
+  const map = { starter: ['Starter', 'pkg-starter'], pro: ['Pro', 'pkg-pro'], custom: ['Custom', 'pkg-custom'] };
+  const [label, cls] = map[p] || [p, 'pkg-starter'];
+  return `<span class="pkg-chip ${cls}">${label}</span>`;
+}
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Render agents ──────────────────────────────────────────────
+function renderAgents() {
+  const tbody = document.getElementById('agentsBody');
+  if (!agents.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🤖</div>No agents yet. Click + Add Agent to get started.</div></td></tr>`;
+  } else {
+    tbody.innerHTML = agents.map((a, i) => `
+      <tr>
+        <td><div class="td-name">${esc(a.name)}</div><div class="td-muted">${esc(a.date || '')}</div></td>
+        <td>${esc(a.type)}</td>
+        <td class="td-muted">${esc(a.business)}</td>
+        <td class="td-muted" style="font-variant-numeric:tabular-nums">${esc(a.schedule)}</td>
+        <td>${statusPill(a.status)}</td>
+        <td class="td-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(a.notes)}">${esc(a.notes)}</td>
+        <td><div class="td-actions">
+          <button class="btn-edit" onclick="editAgent(${i})">Edit</button>
+          <button class="btn-del"  onclick="delAgent(${i})">✕</button>
+        </div></td>
+      </tr>`).join('');
+  }
+  document.getElementById('agentCount').textContent = agents.length ? `(${agents.length})` : '';
+  updateStats();
+}
+
+// ── Render businesses ──────────────────────────────────────────
+function renderBiz() {
+  const tbody = document.getElementById('bizBody');
+  if (!businesses.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏢</div>No businesses yet. Click + Add Business to get started.</div></td></tr>`;
+  } else {
+    tbody.innerHTML = businesses.map((b, i) => `
+      <tr>
+        <td><div class="td-name">${esc(b.name)}</div><div class="td-muted">${esc(b.owner)}</div></td>
+        <td class="td-muted">${esc(b.niche)}</td>
+        <td>${pkgChip(b.package)}</td>
+        <td class="td-muted">${esc(b.location)}</td>
+        <td>${statusPill(b.status)}</td>
+        <td class="td-muted">${b.email ? `<a href="mailto:${esc(b.email)}" style="color:var(--accent);text-decoration:none">${esc(b.email)}</a>` : '—'}</td>
+        <td><div class="td-actions">
+          <button class="btn-edit" onclick="editBiz(${i})">Edit</button>
+          <button class="btn-del"  onclick="delBiz(${i})">✕</button>
+        </div></td>
+      </tr>`).join('');
+  }
+  document.getElementById('bizCount').textContent = businesses.length ? `(${businesses.length})` : '';
+  updateStats();
+}
+
+// ── Stats ──────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statTotalAgents').textContent  = agents.length;
+  document.getElementById('statActiveAgents').textContent = agents.filter(a => a.status === 'active').length;
+  document.getElementById('statBusinesses').textContent   = businesses.length;
+  document.getElementById('statPremium').textContent      = businesses.filter(b => b.package === 'pro' || b.package === 'custom').length;
+}
+
+// ── Modal helpers ──────────────────────────────────────────────
+let editingAgentIdx = null;
+let editingBizIdx   = null;
+
+function openAgentModal(idx) {
+  editingAgentIdx = idx != null ? idx : null;
+  const isEdit = editingAgentIdx !== null;
+  document.getElementById('agentModalTitle').innerHTML = isEdit ? 'Edit <span>Agent</span>' : 'New <span>Agent</span>';
+  const a = isEdit ? agents[idx] : {};
+  document.getElementById('a_name').value     = a.name     || '';
+  document.getElementById('a_type').value     = a.type     || 'Outreach Agent';
+  document.getElementById('a_business').value = a.business || '';
+  document.getElementById('a_schedule').value = a.schedule || '';
+  document.getElementById('a_status').value   = a.status   || 'active';
+  document.getElementById('a_date').value     = a.date     || '';
+  document.getElementById('a_notes').value    = a.notes    || '';
+  document.getElementById('agentModal').classList.add('open');
+  document.getElementById('a_name').focus();
+}
+
+function openBizModal(idx) {
+  editingBizIdx = idx != null ? idx : null;
+  const isEdit = editingBizIdx !== null;
+  document.getElementById('bizModalTitle').innerHTML = isEdit ? 'Edit <span>Business</span>' : 'New <span>Business</span>';
+  const b = isEdit ? businesses[idx] : {};
+  document.getElementById('b_name').value     = b.name     || '';
+  document.getElementById('b_owner').value    = b.owner    || '';
+  document.getElementById('b_niche').value    = b.niche    || '';
+  document.getElementById('b_location').value = b.location || '';
+  document.getElementById('b_package').value  = b.package  || 'starter';
+  document.getElementById('b_status').value   = b.status   || 'active';
+  document.getElementById('b_email').value    = b.email    || '';
+  document.getElementById('b_date').value     = b.date     || '';
+  document.getElementById('b_notes').value    = b.notes    || '';
+  document.getElementById('bizModal').classList.add('open');
+  document.getElementById('b_name').focus();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(el => el.classList.remove('open'));
+});
+
+// ── CRUD agents ────────────────────────────────────────────────
+function saveAgent() {
+  const a = {
+    id:       editingAgentIdx !== null ? agents[editingAgentIdx].id : uid(),
+    name:     document.getElementById('a_name').value.trim(),
+    type:     document.getElementById('a_type').value,
+    business: document.getElementById('a_business').value.trim(),
+    schedule: document.getElementById('a_schedule').value.trim(),
+    status:   document.getElementById('a_status').value,
+    date:     document.getElementById('a_date').value,
+    notes:    document.getElementById('a_notes').value.trim(),
+  };
+  if (!a.name) { document.getElementById('a_name').focus(); return; }
+  if (editingAgentIdx !== null) { agents[editingAgentIdx] = a; } else { agents.push(a); }
+  save(AGENTS_KEY, agents);
+  renderAgents();
+  closeModal('agentModal');
+}
+
+function editAgent(idx) { openAgentModal(idx); }
+function delAgent(idx) {
+  if (!confirm(`Remove agent "${agents[idx].name}"?`)) return;
+  agents.splice(idx, 1);
+  save(AGENTS_KEY, agents);
+  renderAgents();
+}
+
+// ── CRUD businesses ────────────────────────────────────────────
+function saveBiz() {
+  const b = {
+    id:       editingBizIdx !== null ? businesses[editingBizIdx].id : uid(),
+    name:     document.getElementById('b_name').value.trim(),
+    owner:    document.getElementById('b_owner').value.trim(),
+    niche:    document.getElementById('b_niche').value.trim(),
+    location: document.getElementById('b_location').value.trim(),
+    package:  document.getElementById('b_package').value,
+    status:   document.getElementById('b_status').value,
+    email:    document.getElementById('b_email').value.trim(),
+    date:     document.getElementById('b_date').value,
+    notes:    document.getElementById('b_notes').value.trim(),
+  };
+  if (!b.name) { document.getElementById('b_name').focus(); return; }
+  if (editingBizIdx !== null) { businesses[editingBizIdx] = b; } else { businesses.push(b); }
+  save(BIZ_KEY, businesses);
+  renderBiz();
+  closeModal('bizModal');
+}
+
+function editBiz(idx) { openBizModal(idx); }
+function delBiz(idx) {
+  if (!confirm(`Remove "${businesses[idx].name}"?`)) return;
+  businesses.splice(idx, 1);
+  save(BIZ_KEY, businesses);
+  renderBiz();
+}
+
+// ── CSV export ─────────────────────────────────────────────────
+function exportCSV(type) {
+  let rows, filename;
+  if (type === 'agents') {
+    rows = [['Name','Type','Business','Schedule','Status','Start Date','Notes'],
+            ...agents.map(a => [a.name, a.type, a.business, a.schedule, a.status, a.date, a.notes])];
+    filename = 'autoflow-agents.csv';
+  } else {
+    rows = [['Business','Owner','Niche','Location','Package','Status','Email','Start Date','Notes'],
+            ...businesses.map(b => [b.name, b.owner, b.niche, b.location, b.package, b.status, b.email, b.date, b.notes])];
+    filename = 'autoflow-businesses.csv';
+  }
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = filename; a.click();
+}
+
+// ── Init ───────────────────────────────────────────────────────
+renderAgents();
+renderBiz();
+</script>
+</body>
+</html>
