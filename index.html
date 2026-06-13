@@ -289,7 +289,7 @@
     #packages { background: var(--bg); }
     .packages-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem; margin-top: 3rem; align-items: start;
+      gap: 1.5rem; margin-top: 3rem; align-items: stretch;
     }
     .pkg {
       background: var(--card); border: 1px solid var(--border-dim);
@@ -300,6 +300,7 @@
         linear-gradient(var(--grid-line) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 40px 40px;
+      display: flex; flex-direction: column;
     }
     .pkg::after {
       content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 50%;
@@ -328,7 +329,7 @@
       background: linear-gradient(105deg, transparent 30%, rgba(255,240,100,0.05) 40%,
         rgba(255,255,200,0.09) 50%, rgba(255,215,0,0.05) 60%, transparent 70%);
     }
-    .pkg.featured .pkg-name { color: var(--gold); }
+    .pkg.featured .pkg-name { color: var(--accent); }
     .pkg.featured .pkg-price { color: var(--gold); }
     .pkg.featured .chk { color: var(--gold); }
     .pkg.featured .pkg-cta {
@@ -412,7 +413,7 @@
       display: block; text-align: center; padding: 0.9rem;
       border-radius: 8px; font-weight: 700; text-decoration: none;
       font-size: 0.95rem; position: relative; z-index: 2; cursor: pointer;
-      font-family: inherit; width: 100%;
+      font-family: inherit; width: 100%; margin-top: auto;
       transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease, border-color var(--t2) ease, color var(--t2) ease;
     }
     .pkg-cta:disabled { cursor: not-allowed; }
@@ -544,6 +545,7 @@
       .hero-stats { gap: 1.6rem; }
       .stat-divider { display: none; }
       .packages-grid { grid-template-columns: 1fr; }
+      .pkg.featured { margin-top: 1rem; }
     }
     @media (max-width: 480px) {
       section { padding: 4rem 1.25rem; }
