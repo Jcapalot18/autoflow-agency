@@ -327,16 +327,15 @@
       background: linear-gradient(105deg, transparent 30%, rgba(255,240,100,0.05) 40%,
         rgba(255,255,200,0.09) 50%, rgba(255,215,0,0.05) 60%, transparent 70%);
     }
-    .pkg.featured .pkg-name { color: var(--gold); }
+    .pkg.featured .pkg-name { color: var(--accent); }
     .pkg.featured .pkg-price { color: var(--gold); }
     .pkg.featured .chk { color: var(--gold); }
     .pkg.featured .pkg-cta {
-      background: linear-gradient(135deg, var(--gold) 0%, #ffb300 100%);
-      color: #000; font-weight: 800; border: none;
-      box-shadow: 0 6px 24px rgba(255,215,0,0.35);
+      background: var(--accent); color: #fff; font-weight: 800; border: none;
+      box-shadow: 0 6px 24px rgba(255,107,0,0.45);
       transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease;
     }
-    .pkg.featured .pkg-cta:hover { transform: translateY(-2px) scale(1.03); box-shadow: var(--shadow-gold); opacity: 1; }
+    .pkg.featured .pkg-cta:hover { transform: translateY(-2px) scale(1.03); box-shadow: var(--shadow-orange); color: #fff; opacity: 1; }
 
     /* Gold corner accents for featured */
     .pkg-corners {
@@ -398,6 +397,7 @@
       font-variant-numeric: tabular-nums; letter-spacing: -0.03em; position: relative; z-index: 2;
     }
     .pkg-price span { font-size: 0.88rem; font-weight: 500; color: var(--muted); }
+    .pkg-range { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; position: relative; z-index: 2; }
     .pkg-desc { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.6rem; line-height: 1.65; position: relative; z-index: 2; }
     .pkg-features { list-style: none; margin-bottom: 2rem; position: relative; z-index: 2; }
     .pkg-features li {
@@ -887,7 +887,7 @@
         <div class="pkg-price">$3,000 <span>one-time</span></div>
         <div class="pkg-desc">Everything in Starter, plus auto-reply handling, mission control dashboard, and agents across 3 niches.</div>
         <ul class="pkg-features">
-          <li><span class="chk">✓</span> Everything in Starter</li>
+          <li><span class="chk">✓</span> All Starter features — 1 outreach agent, AI email templates, day-3 &amp; day-7 follow-up, source code, 30-day support</li>
           <li><span class="chk">✓</span> Auto-reply handler (AI reads &amp; responds)</li>
           <li><span class="chk">✓</span> Mission control dashboard</li>
           <li><span class="chk">✓</span> 3 niches targeted simultaneously</li>
@@ -900,11 +900,12 @@
 
       <div class="pkg reveal">
         <div class="pkg-name">Custom</div>
-        <div class="pkg-price">$5,000+ <span>one-time</span></div>
+        <div class="pkg-price">Starting at $5,000 <span>one-time</span></div>
+        <div class="pkg-range">Most projects land between $5,000–$8,000 depending on scope</div>
         <div class="pkg-desc">Full automation ecosystem — multiple agents, Sankar Cosmos dashboard, and ongoing support.</div>
         <ul class="pkg-features">
           <li><span class="chk">✓</span> Full agent ecosystem (unlimited agents)</li>
-          <li><span class="chk">✓</span> Sankar Cosmos dashboard</li>
+          <li><span class="chk">✓</span> Custom real-time mission control dashboard — all agents, emails sent, replies, and revenue in one place</li>
           <li><span class="chk">✓</span> Custom niche &amp; city targeting</li>
           <li><span class="chk">✓</span> Auto-reply + follow-up system</li>
           <li><span class="chk">✓</span> Daily reporting &amp; monitoring</li>
