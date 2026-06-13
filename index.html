@@ -320,6 +320,7 @@
         linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: auto, 40px 40px, 40px 40px;
       box-shadow: 0 4px 32px rgba(255,215,0,0.09), var(--shadow-card);
+      overflow: visible;
     }
     .pkg.featured:hover { border-color: rgba(255,215,0,0.65); box-shadow: 0 20px 60px rgba(255,215,0,0.14), var(--shadow-hover); }
     .pkg.featured::after {
@@ -331,7 +332,7 @@
     .pkg.featured .chk { color: var(--gold); }
     .pkg.featured .pkg-cta {
       background: linear-gradient(135deg, var(--gold) 0%, #ffb300 100%);
-      color: #000; font-weight: 800;
+      color: #000; font-weight: 800; border: none;
       box-shadow: 0 6px 24px rgba(255,215,0,0.35);
       transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease;
     }
