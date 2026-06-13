@@ -215,6 +215,7 @@
 
     /* ── SHARED ────────────────────────────────────────────────── */
     section { padding: 6rem 1.5rem; position: relative; z-index: 1; }
+    section[id] { scroll-margin-top: 80px; }
     .section-inner { max-width: 1100px; margin: 0 auto; }
     .section-label {
       display: inline-block; background: var(--accent-dim); color: var(--accent);
@@ -413,8 +414,14 @@
       transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease, border-color var(--t2) ease, color var(--t2) ease;
     }
     .pkg-cta:disabled { cursor: not-allowed; }
-    .pkg:not(.featured) .pkg-cta { border: 1px solid var(--border-dim); color: var(--text); }
-    .pkg:not(.featured) .pkg-cta:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+    .pkg:not(.featured) .pkg-cta {
+      background: var(--accent); color: #fff; border: none;
+      box-shadow: 0 4px 16px rgba(255,107,0,0.28);
+    }
+    .pkg:not(.featured) .pkg-cta:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--shadow-orange); color: #fff;
+    }
 
     /* ── EARLY ACCESS ──────────────────────────────────────────── */
     #testimonials { background: var(--bg2); }
@@ -900,6 +907,7 @@
           <li><span class="chk">✓</span> Custom niche &amp; city targeting</li>
           <li><span class="chk">✓</span> Auto-reply + follow-up system</li>
           <li><span class="chk">✓</span> Daily reporting &amp; monitoring</li>
+          <li><span class="chk">✓</span> Full source code &amp; documentation</li>
           <li><span class="chk">✓</span> Ongoing support &amp; maintenance</li>
         </ul>
         <a href="#contact" class="pkg-cta">Contact Us</a>
