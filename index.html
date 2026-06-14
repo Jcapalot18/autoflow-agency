@@ -508,6 +508,7 @@
       font-size: 0.84rem; color: var(--muted); margin-bottom: 0.65rem; line-height: 1.45;
     }
     .proof-ba-label svg { width: 13px; height: 13px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .proof-ba-chart { width: 100%; height: 90px; margin-bottom: 1.2rem; border-radius: 8px; overflow: hidden; }
     .proof-ba-item svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     .proof-ba-card.before .proof-ba-item svg { stroke: var(--muted); }
     .proof-ba-card.after .proof-ba-item svg { stroke: var(--accent); }
@@ -922,6 +923,22 @@
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Before automation
           </div>
+          <!-- Flat / dead line chart -->
+          <svg class="proof-ba-chart" viewBox="0 0 300 90" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="55" x2="300" y2="55" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <path d="M0,72 L50,71 L100,73 L150,70 L200,74 L250,72 L300,71 L300,90 L0,90 Z" fill="rgba(255,255,255,0.03)"/>
+            <polyline points="0,72 50,71 100,73 150,70 200,74 250,72 300,71" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="0"   cy="72" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="50"  cy="71" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="100" cy="73" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="150" cy="70" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="200" cy="74" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="250" cy="72" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="300" cy="71" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <text x="10" y="18" fill="rgba(255,255,255,0.18)" font-size="9" font-family="sans-serif">0 leads · 0 pipeline · 0 traction</text>
+          </svg>
           <div class="proof-ba-item">
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Manual outreach — hours per day, zero scale
@@ -944,6 +961,22 @@
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
             After AutoFlow agents
           </div>
+          <!-- Upward growth chart -->
+          <svg class="proof-ba-chart" viewBox="0 0 300 90" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,107,0,0.08)" stroke-width="1"/>
+            <line x1="0" y1="55" x2="300" y2="55" stroke="rgba(255,107,0,0.08)" stroke-width="1"/>
+            <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,107,0,0.08)" stroke-width="1"/>
+            <path d="M0,82 L50,76 L100,65 L150,50 L200,34 L250,18 L300,8 L300,90 L0,90 Z" fill="rgba(255,107,0,0.10)"/>
+            <polyline points="0,82 50,76 100,65 150,50 200,34 250,18 300,8" stroke="#FF6B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="0"   cy="82" r="3" fill="#FF6B00"/>
+            <circle cx="50"  cy="76" r="3" fill="#FF6B00"/>
+            <circle cx="100" cy="65" r="3" fill="#FF6B00"/>
+            <circle cx="150" cy="50" r="3" fill="#FF6B00"/>
+            <circle cx="200" cy="34" r="3" fill="#FF6B00"/>
+            <circle cx="250" cy="18" r="3" fill="#FF6B00"/>
+            <circle cx="300" cy="8"  r="3" fill="#FF6B00"/>
+            <text x="10" y="18" fill="rgba(255,107,0,0.55)" font-size="9" font-family="sans-serif">100+ emails/day · pipeline growing</text>
+          </svg>
           <div class="proof-ba-item">
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
             100+ personalized emails sent every morning, automatically
