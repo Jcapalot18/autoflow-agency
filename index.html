@@ -659,6 +659,167 @@
     .footer-social a:hover { color: var(--accent); border-color: var(--border); }
     .footer-social svg { width: 18px; height: 18px; }
 
+    /* ── HERO DEMO ─────────────────────────────────────────────── */
+    .demo-wrap {
+      width: 100%; max-width: 900px; margin: 3.5rem auto 0;
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--border-dim);
+      background: #0a0e18;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,107,0,0.06);
+    }
+    .demo-tabs {
+      display: flex; border-bottom: 1px solid var(--border-dim);
+      background: rgba(255,255,255,0.02);
+    }
+    .demo-tab {
+      flex: 1; padding: 0.75rem 0.5rem; text-align: center;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted);
+      cursor: pointer; transition: color 0.25s ease, border-color 0.25s ease;
+      border-bottom: 2px solid transparent; position: relative;
+      background: none; border-left: none; border-right: none; border-top: none;
+      font-family: inherit;
+    }
+    .demo-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .demo-tab:hover { color: var(--text); }
+    .demo-screen-wrap {
+      position: relative; height: 340px; overflow: hidden;
+    }
+    .demo-screen {
+      position: absolute; inset: 0; padding: 1.8rem 2rem;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .demo-screen.active {
+      opacity: 1; transform: translateY(0); pointer-events: auto;
+    }
+    .demo-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .demo-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: demoPulse 1.5s infinite; }
+    @keyframes demoPulse { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+
+    /* Screen 1 — Map + business list */
+    .demo-map-area { display: flex; gap: 2rem; height: 260px; }
+    .demo-map {
+      flex: 1; position: relative; border-radius: 10px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border-dim);
+      overflow: hidden;
+    }
+    .demo-map svg { width: 100%; height: 100%; opacity: 0.15; }
+    .demo-dot {
+      position: absolute; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); opacity: 0;
+      box-shadow: 0 0 8px rgba(255,107,0,0.5);
+      animation: dotAppear 0.5s forwards;
+    }
+    @keyframes dotAppear { to { opacity: 1; transform: scale(1.2); } }
+    .demo-biz-list {
+      width: 260px; display: flex; flex-direction: column; gap: 6px;
+      overflow: hidden;
+    }
+    .demo-biz {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border-dim);
+      border-radius: 8px; padding: 0.55rem 0.85rem;
+      font-size: 0.78rem; color: var(--text);
+      opacity: 0; transform: translateX(20px);
+      animation: bizSlide 0.4s forwards;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .demo-biz .biz-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    @keyframes bizSlide { to { opacity: 1; transform: translateX(0); } }
+    .demo-counter {
+      position: absolute; bottom: 12px; right: 14px;
+      background: rgba(255,107,0,0.12); border: 1px solid rgba(255,107,0,0.25);
+      border-radius: 6px; padding: 0.3rem 0.7rem;
+      font-size: 0.72rem; font-weight: 700; color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Screen 2 — Email typing */
+    .demo-email {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border-dim);
+      border-radius: 10px; padding: 1.4rem 1.6rem; height: 260px;
+      position: relative; overflow: hidden;
+    }
+    .demo-email-to { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .demo-email-subj { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-dim); }
+    .demo-email-body { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+    .demo-email-body .typed-cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent); margin-left: 2px; animation: blink 0.8s steps(1) infinite; vertical-align: text-bottom; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .demo-email-meta {
+      position: absolute; bottom: 14px; right: 16px;
+      display: flex; gap: 1rem; font-size: 0.68rem; color: var(--muted);
+    }
+    .demo-email-meta span { display: flex; align-items: center; gap: 4px; }
+    .demo-email-meta .score { color: #00c853; }
+
+    /* Screen 3 — Sending */
+    .demo-send-area { height: 260px; }
+    .demo-progress-wrap {
+      background: rgba(255,255,255,0.04); border-radius: 8px; height: 8px;
+      margin-bottom: 1.2rem; overflow: hidden;
+    }
+    .demo-progress-bar {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--gold));
+      border-radius: 8px; transition: width 0.3s ease;
+    }
+    .demo-send-counter {
+      font-size: 0.85rem; font-weight: 700; color: #fff;
+      margin-bottom: 1rem; font-variant-numeric: tabular-nums;
+    }
+    .demo-send-list { display: flex; flex-direction: column; gap: 5px; max-height: 180px; overflow: hidden; }
+    .demo-send-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.78rem; color: var(--muted);
+      padding: 0.45rem 0.8rem;
+      background: rgba(255,255,255,0.02); border-radius: 6px;
+      opacity: 0; animation: bizSlide 0.3s forwards;
+    }
+    .demo-send-item .chk-icon { color: #00c853; font-weight: 700; flex-shrink: 0; }
+    .demo-send-item.reply {
+      border: 1px solid rgba(255,107,0,0.3);
+      background: rgba(255,107,0,0.06); color: var(--accent);
+    }
+
+    /* Screen 4 — Results */
+    .demo-results {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 1rem; height: 260px; align-content: center;
+    }
+    .demo-result-card {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border-dim);
+      border-radius: 12px; padding: 1.4rem; text-align: center;
+    }
+    .demo-result-num {
+      font-size: 2.4rem; font-weight: 800; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-result-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .demo-screen-wrap { height: 320px; }
+      .demo-map-area { flex-direction: column; gap: 1rem; height: auto; }
+      .demo-map { height: 140px; }
+      .demo-biz-list { width: 100%; flex-direction: row; flex-wrap: wrap; }
+      .demo-biz { flex: 1; min-width: 140px; }
+      .demo-results { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+      .demo-result-num { font-size: 1.8rem; }
+      .demo-email { height: auto; min-height: 260px; }
+      .demo-screen { padding: 1.2rem; }
+    }
+    @media (max-width: 480px) {
+      .demo-tab { font-size: 0.6rem; padding: 0.6rem 0.3rem; }
+    }
+
     /* ── MOBILE ────────────────────────────────────────────────── */
     @media (max-width: 768px) {
       .nav-links, .nav-cta { display: none; }
@@ -803,6 +964,80 @@
       <a href="#packages" class="btn-primary">See Packages</a>
       <a href="#contact" class="btn-outline">Get Started Today</a>
     </div>
+    <!-- ── ANIMATED DEMO ─────────────────────────────── -->
+    <div class="demo-wrap">
+      <div class="demo-tabs">
+        <button class="demo-tab active" data-screen="0">Finding Leads</button>
+        <button class="demo-tab" data-screen="1">Writing Emails</button>
+        <button class="demo-tab" data-screen="2">Sending</button>
+        <button class="demo-tab" data-screen="3">Results</button>
+      </div>
+      <div class="demo-screen-wrap">
+
+        <!-- Screen 1: Finding Businesses -->
+        <div class="demo-screen active" id="demo-s0">
+          <div class="demo-label"><span class="dot"></span> Agent scanning cities</div>
+          <div class="demo-map-area">
+            <div class="demo-map" id="demo-map">
+              <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+                <path d="M230,130 L280,120 L330,110 L380,115 L440,105 L500,100 L550,105 L600,110 L650,120 L700,115 L750,130 L780,150 L800,180 L810,210 L805,250 L790,280 L770,310 L740,340 L700,360 L660,380 L620,395 L580,400 L540,405 L500,400 L460,390 L420,380 L380,370 L340,355 L300,340 L260,320 L230,290 L210,260 L200,230 L195,200 L200,170 L210,150 Z" fill="rgba(255,107,0,0.08)" stroke="rgba(255,107,0,0.15)" stroke-width="1"/>
+              </svg>
+              <div class="demo-counter" id="demo-found-count">0 businesses found</div>
+            </div>
+            <div class="demo-biz-list" id="demo-biz-list"></div>
+          </div>
+        </div>
+
+        <!-- Screen 2: Writing Email -->
+        <div class="demo-screen" id="demo-s1">
+          <div class="demo-label"><span class="dot"></span> AI writing personalized email</div>
+          <div class="demo-email">
+            <div class="demo-email-to">To: info@dallasrealtygroup.com</div>
+            <div class="demo-email-subj" id="demo-subj"></div>
+            <div class="demo-email-body" id="demo-body"></div>
+            <div class="demo-email-meta">
+              <span id="demo-wc">0 words</span>
+              <span class="score" id="demo-score">Personalization: --</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 3: Sending -->
+        <div class="demo-screen" id="demo-s2">
+          <div class="demo-label"><span class="dot"></span> Sending outreach sequence</div>
+          <div class="demo-send-area">
+            <div class="demo-progress-wrap"><div class="demo-progress-bar" id="demo-prog"></div></div>
+            <div class="demo-send-counter" id="demo-send-ct">0 / 50 emails sent</div>
+            <div class="demo-send-list" id="demo-send-list"></div>
+          </div>
+        </div>
+
+        <!-- Screen 4: Results -->
+        <div class="demo-screen" id="demo-s3">
+          <div class="demo-label"><span class="dot"></span> Week 1 performance</div>
+          <div class="demo-results">
+            <div class="demo-result-card">
+              <div class="demo-result-num" id="dr-rate">0%</div>
+              <div class="demo-result-label">Reply Rate</div>
+            </div>
+            <div class="demo-result-card">
+              <div class="demo-result-num" id="dr-leads">0</div>
+              <div class="demo-result-label">Leads Scored</div>
+            </div>
+            <div class="demo-result-card">
+              <div class="demo-result-num" id="dr-appt">0</div>
+              <div class="demo-result-label">Appointments Booked</div>
+            </div>
+            <div class="demo-result-card">
+              <div class="demo-result-num" id="dr-rev">$0</div>
+              <div class="demo-result-label">Pipeline Value</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="hero-stats">
       <div class="stat">
         <div class="stat-num"><span>500+</span></div>
@@ -1404,6 +1639,163 @@
 </footer>
 
 <script>
+  // ── Hero Demo Animation ───────────────────────────────────
+  (function(){
+    const BUSINESSES = [
+      { name:'Dallas Real Estate Group', city:'Dallas TX', x:52, y:58 },
+      { name:'Austin Dental Care', city:'Austin TX', x:48, y:64 },
+      { name:'Miami Insurance Agency', city:'Miami FL', x:78, y:78 },
+      { name:'Phoenix Property Mgmt', city:'Phoenix AZ', x:28, y:58 },
+      { name:'Chicago Law Associates', city:'Chicago IL', x:60, y:34 },
+      { name:'Houston CPA Firm', city:'Houston TX', x:54, y:68 },
+      { name:'Atlanta Staffing Co', city:'Atlanta GA', x:68, y:58 },
+    ];
+    const SEND_ITEMS = [
+      { name:'Dallas Real Estate Group', reply:false },
+      { name:'Austin Dental Care', reply:false },
+      { name:'Phoenix Property Mgmt', reply:true },
+      { name:'Chicago Law Associates', reply:false },
+      { name:'Houston CPA Firm', reply:false },
+      { name:'Miami Insurance Agency', reply:true },
+      { name:'Atlanta Staffing Co', reply:false },
+    ];
+    const EMAIL_SUBJ = 'Follow-up system for Dallas Real Estate Group';
+    const EMAIL_BODY = 'Hi,\n\nI noticed Dallas Real Estate Group handles property management across the DFW metro. Most brokers I talk to spend 2-3 hours a day on cold calls and follow-ups that could run automatically.\n\nI built a system that contacts your ideal leads, writes personalized emails for each one, and follows up on day 3 and day 7 — no templates, every message is unique.\n\nReply and I will send a 2-minute walkthrough.';
+
+    let currentScreen = 0;
+    let demoInterval = null;
+    let screenAnimations = [];
+
+    function clearScreenAnimations() {
+      screenAnimations.forEach(t => clearTimeout(t));
+      screenAnimations = [];
+    }
+
+    function switchScreen(idx) {
+      clearScreenAnimations();
+      currentScreen = idx;
+      document.querySelectorAll('.demo-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+      document.querySelectorAll('.demo-screen').forEach((s,i) => s.classList.toggle('active', i===idx));
+      if(idx===0) animateScreen0();
+      if(idx===1) animateScreen1();
+      if(idx===2) animateScreen2();
+      if(idx===3) animateScreen3();
+    }
+
+    // Screen 0: Map dots + business list
+    function animateScreen0() {
+      const map = document.getElementById('demo-map');
+      const list = document.getElementById('demo-biz-list');
+      const counter = document.getElementById('demo-found-count');
+      map.querySelectorAll('.demo-dot').forEach(d => d.remove());
+      list.innerHTML = '';
+      counter.textContent = '0 businesses found';
+
+      BUSINESSES.forEach((biz,i) => {
+        screenAnimations.push(setTimeout(() => {
+          const dot = document.createElement('div');
+          dot.className = 'demo-dot';
+          dot.style.left = biz.x+'%'; dot.style.top = biz.y+'%';
+          dot.style.animationDelay = '0s';
+          map.appendChild(dot);
+
+          const item = document.createElement('div');
+          item.className = 'demo-biz';
+          item.style.animationDelay = '0s';
+          item.innerHTML = '<span class="biz-dot"></span>'+biz.name;
+          list.appendChild(item);
+
+          counter.textContent = (i+1)+' businesses found';
+        }, 400 + i*450));
+      });
+    }
+
+    // Screen 1: Typing email
+    function animateScreen1() {
+      const subj = document.getElementById('demo-subj');
+      const body = document.getElementById('demo-body');
+      const wc = document.getElementById('demo-wc');
+      const score = document.getElementById('demo-score');
+      subj.textContent = ''; body.innerHTML = ''; wc.textContent = '0 words'; score.textContent = 'Personalization: --';
+
+      let si = 0;
+      function typeSubj() {
+        if(si < EMAIL_SUBJ.length) {
+          subj.textContent = EMAIL_SUBJ.slice(0, ++si);
+          screenAnimations.push(setTimeout(typeSubj, 35));
+        } else { typeBody(); }
+      }
+
+      const words = EMAIL_BODY.split(' ');
+      let wi = 0;
+      function typeBody() {
+        if(wi < words.length) {
+          const w = words[wi++];
+          body.innerHTML = body.textContent + (wi>1?' ':'') + w + '<span class="typed-cursor"></span>';
+          wc.textContent = wi + ' words';
+          if(wi > 10) score.textContent = 'Personalization: 94%';
+          screenAnimations.push(setTimeout(typeBody, 55));
+        }
+      }
+      typeSubj();
+    }
+
+    // Screen 2: Sending progress
+    function animateScreen2() {
+      const prog = document.getElementById('demo-prog');
+      const ct = document.getElementById('demo-send-ct');
+      const list = document.getElementById('demo-send-list');
+      prog.style.width = '0%'; ct.textContent = '0 / 50 emails sent'; list.innerHTML = '';
+
+      SEND_ITEMS.forEach((item,i) => {
+        screenAnimations.push(setTimeout(() => {
+          const pct = Math.round(((i+1)/SEND_ITEMS.length)*46);
+          prog.style.width = pct+'%';
+          ct.textContent = (i+1)+' / 50 emails sent';
+
+          const row = document.createElement('div');
+          row.className = 'demo-send-item' + (item.reply ? ' reply' : '');
+          row.style.animationDelay = '0s';
+          row.innerHTML = item.reply
+            ? '<span class="chk-icon">&#9993;</span> Reply detected — '+item.name
+            : '<span class="chk-icon">&#10003;</span> Sent to '+item.name;
+          list.appendChild(row);
+        }, 300 + i*500));
+      });
+    }
+
+    // Screen 3: Results counting up
+    function animateScreen3() {
+      const targets = { 'dr-rate':{end:17,suffix:'%'}, 'dr-leads':{end:12,suffix:''}, 'dr-appt':{end:4,suffix:''}, 'dr-rev':{end:48,suffix:'',prefix:'$',mult:1000} };
+      Object.entries(targets).forEach(([id,cfg]) => {
+        const el = document.getElementById(id);
+        el.textContent = (cfg.prefix||'')+'0'+(cfg.suffix||'');
+        let cur = 0;
+        const step = Math.max(1, Math.floor(cfg.end/20));
+        function tick() {
+          cur = Math.min(cur+step, cfg.end);
+          const val = cfg.mult ? (cur*cfg.mult).toLocaleString() : cur;
+          el.textContent = (cfg.prefix||'')+val+cfg.suffix;
+          if(cur<cfg.end) screenAnimations.push(setTimeout(tick, 60));
+        }
+        screenAnimations.push(setTimeout(tick, 400));
+      });
+    }
+
+    // Tab clicks
+    document.querySelectorAll('.demo-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        clearInterval(demoInterval);
+        switchScreen(+tab.dataset.screen);
+        demoInterval = setInterval(() => switchScreen((currentScreen+1)%4), 5000);
+      });
+    });
+
+    // Auto-cycle
+    switchScreen(0);
+    demoInterval = setInterval(() => switchScreen((currentScreen+1)%4), 5000);
+  })();
+
   // ── Stripe Checkout ───────────────────────────────────────
   document.querySelectorAll('.pkg-cta[data-package]').forEach(btn => {
     btn.addEventListener('click', async () => {
