@@ -2,7 +2,21 @@
   "name": "autoflow-agency",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "agent": "node social-media-agent.js",
+    "agent:test": "node social-media-agent.js test",
+    "agent:monday": "node social-media-agent.js monday",
+    "agent:tuesday": "node social-media-agent.js tuesday",
+    "agent:wednesday": "node social-media-agent.js wednesday",
+    "agent:thursday": "node social-media-agent.js thursday",
+    "agent:friday": "node social-media-agent.js friday"
+  },
   "dependencies": {
-    "stripe": "^16.12.0"
+    "@napi-rs/canvas": "^1.0.1",
+    "dotenv": "^17.4.2",
+    "node-cron": "^4.5.0",
+    "stripe": "^16.12.0",
+    "twitter-api-v2": "^1.29.0"
   }
 }
