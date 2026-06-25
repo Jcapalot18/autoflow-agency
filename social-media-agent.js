@@ -525,17 +525,9 @@ console.log(`
  └──────────────────────────────────────────────────────────┘
 `);
 
-// ── CLI: run a specific day's post immediately ────────────────────
-// Usage: node social-media-agent.js monday
-const cliDay = process.argv[2]?.toLowerCase();
-if (cliDay && CONTENT[cliDay]) {
-  console.log(`[CLI] Running ${cliDay} post immediately...`);
-  executePost(cliDay).catch(err => {
-    console.error('[CLI] Failed:', err);
-    process.exit(1);
-  });
-} else if (cliDay === 'test') {
-  console.log('[CLI] Test mode — generating all 5 weekly post images (no posting)\n');
+// ── Test Mode ─────────────────────────────────────────────────────
+async function runTestMode() {
+  console.log('Running test mode...\n');
   const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
   const LABELS = {
     monday: 'Mon  9am — CyberShield security',
@@ -544,22 +536,33 @@ if (cliDay && CONTENT[cliDay]) {
     thursday: 'Thu  2pm — CyberShield breach/threat',
     friday: 'Fri 10am — Founder story',
   };
-  (async () => {
-    for (const day of DAYS) {
-      const post = pickPost(day);
-      const imgFile = path.join(IMG_DIR, `${day}.png`);
-      await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
+  for (const day of DAYS) {
+    const post = pickPost(day);
+    const imgFile = path.join(IMG_DIR, `${day}.png`);
+    await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
 
-      const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}\n\n${post.hashtags}`;
-      console.log(`${'━'.repeat(60)}`);
-      console.log(`  ${LABELS[day]}`);
-      console.log(`${'━'.repeat(60)}`);
-      console.log(`\n${fullText}\n`);
-      console.log(`  Image: ${imgFile}\n`);
-    }
+    const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}\n\n${post.hashtags}`;
     console.log(`${'━'.repeat(60)}`);
-    console.log(`  All 5 images saved to ${IMG_DIR}`);
+    console.log(`  ${LABELS[day]}`);
     console.log(`${'━'.repeat(60)}`);
-    process.exit(0);
-  })();
+    console.log(`\n${fullText}\n`);
+    console.log(`  Image: ${imgFile}\n`);
+  }
+  console.log(`${'━'.repeat(60)}`);
+  console.log(`  All 5 images saved to ${IMG_DIR}`);
+  console.log(`${'━'.repeat(60)}`);
+}
+
+// ── CLI: run a specific day's post or test mode ───────────────────
+// Usage: node social-media-agent.js test
+//        node social-media-agent.js monday
+const cliDay = process.argv[2]?.toLowerCase();
+if (cliDay === 'test') {
+  runTestMode().then(() => process.exit(0)).catch(console.error);
+} else if (cliDay && CONTENT[cliDay]) {
+  console.log(`[CLI] Running ${cliDay} post immediately...`);
+  executePost(cliDay).catch(err => {
+    console.error('[CLI] Failed:', err);
+    process.exit(1);
+  });
 }
