@@ -495,20 +495,53 @@ async function executePost(day) {
   console.log(`[Done] ${day} post complete\n`);
 }
 
-// ── Cron Schedule ─────────────────────────────────────────────────
-// Times in server timezone — set TZ env var to match your local time
-//   Monday    9:00 AM
-//   Tuesday  11:00 AM
-//   Wednesday 12:00 PM
-//   Thursday  2:00 PM
-//   Friday   10:00 AM
-cron.schedule('0 9 * * 1',  () => executePost('monday'));
-cron.schedule('0 11 * * 2', () => executePost('tuesday'));
-cron.schedule('0 12 * * 3', () => executePost('wednesday'));
-cron.schedule('0 14 * * 4', () => executePost('thursday'));
-cron.schedule('0 10 * * 5', () => executePost('friday'));
+// ── Test Mode ─────────────────────────────────────────────────────
+async function runTestMode() {
+  console.log('Running test mode — generating 5 posts...\n');
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+  const labels = {
+    monday: 'Mon  9am — CyberShield security',
+    tuesday: 'Tue 11am — AutoFlow building in public',
+    wednesday: 'Wed 12pm — AutoFlow results/automation',
+    thursday: 'Thu  2pm — CyberShield breach/threat',
+    friday: 'Fri 10am — Founder story',
+  };
+  for (const day of days) {
+    const post = pickPost(day);
+    const imgFile = path.join(IMG_DIR, `${day}.png`);
+    await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
 
-console.log(`
+    const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}`;
+    console.log(`\n--- ${day.toUpperCase()} (${labels[day]}) ---`);
+    console.log(fullText);
+    console.log(`Hashtags: ${post.hashtags}`);
+    console.log(`Image: ${imgFile}`);
+  }
+  console.log(`\nAll 5 images saved to ${IMG_DIR}`);
+  console.log('Done!');
+}
+
+// ── CLI entry point — checked BEFORE cron registration ────────────
+// Usage: node social-media-agent.js test
+//        node social-media-agent.js monday
+const args = process.argv.slice(2);
+if (args[0] === 'test') {
+  runTestMode().then(() => process.exit(0)).catch(console.error);
+} else if (args[0] && CONTENT[args[0].toLowerCase()]) {
+  console.log(`[CLI] Running ${args[0]} post immediately...`);
+  executePost(args[0].toLowerCase()).catch(err => {
+    console.error('[CLI] Failed:', err);
+    process.exit(1);
+  });
+} else {
+  // ── Daemon mode — register cron schedules ─────────────────────
+  cron.schedule('0 9 * * 1',  () => executePost('monday'));
+  cron.schedule('0 11 * * 2', () => executePost('tuesday'));
+  cron.schedule('0 12 * * 3', () => executePost('wednesday'));
+  cron.schedule('0 14 * * 4', () => executePost('thursday'));
+  cron.schedule('0 10 * * 5', () => executePost('friday'));
+
+  console.log(`
  ┌──────────────────────────────────────────────────────────┐
  │  Social Media Agent — Running                           │
  │                                                         │
@@ -524,45 +557,4 @@ console.log(`
  │  Twitter:  ${process.env.TWITTER_API_KEY ? 'configured' : 'NOT SET — add TWITTER_API_KEY'}
  └──────────────────────────────────────────────────────────┘
 `);
-
-// ── Test Mode ─────────────────────────────────────────────────────
-async function runTestMode() {
-  console.log('Running test mode...\n');
-  const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-  const LABELS = {
-    monday: 'Mon  9am — CyberShield security',
-    tuesday: 'Tue 11am — AutoFlow building in public',
-    wednesday: 'Wed 12pm — AutoFlow results/automation',
-    thursday: 'Thu  2pm — CyberShield breach/threat',
-    friday: 'Fri 10am — Founder story',
-  };
-  for (const day of DAYS) {
-    const post = pickPost(day);
-    const imgFile = path.join(IMG_DIR, `${day}.png`);
-    await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
-
-    const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}\n\n${post.hashtags}`;
-    console.log(`${'━'.repeat(60)}`);
-    console.log(`  ${LABELS[day]}`);
-    console.log(`${'━'.repeat(60)}`);
-    console.log(`\n${fullText}\n`);
-    console.log(`  Image: ${imgFile}\n`);
-  }
-  console.log(`${'━'.repeat(60)}`);
-  console.log(`  All 5 images saved to ${IMG_DIR}`);
-  console.log(`${'━'.repeat(60)}`);
-}
-
-// ── CLI: run a specific day's post or test mode ───────────────────
-// Usage: node social-media-agent.js test
-//        node social-media-agent.js monday
-const cliDay = process.argv[2]?.toLowerCase();
-if (cliDay === 'test') {
-  runTestMode().then(() => process.exit(0)).catch(console.error);
-} else if (cliDay && CONTENT[cliDay]) {
-  console.log(`[CLI] Running ${cliDay} post immediately...`);
-  executePost(cliDay).catch(err => {
-    console.error('[CLI] Failed:', err);
-    process.exit(1);
-  });
 }
