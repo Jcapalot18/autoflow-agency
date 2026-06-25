@@ -535,15 +535,31 @@ if (cliDay && CONTENT[cliDay]) {
     process.exit(1);
   });
 } else if (cliDay === 'test') {
-  console.log('[CLI] Test mode — generating all images without posting...');
+  console.log('[CLI] Test mode — generating all 5 weekly post images (no posting)\n');
+  const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+  const LABELS = {
+    monday: 'Mon  9am — CyberShield security',
+    tuesday: 'Tue 11am — AutoFlow building in public',
+    wednesday: 'Wed 12pm — AutoFlow results/automation',
+    thursday: 'Thu  2pm — CyberShield breach/threat',
+    friday: 'Fri 10am — Founder story',
+  };
   (async () => {
-    for (const day of Object.keys(CONTENT)) {
+    for (const day of DAYS) {
       const post = pickPost(day);
-      const imgFile = path.join(IMG_DIR, `test-${day}.png`);
+      const imgFile = path.join(IMG_DIR, `${day}.png`);
       await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
-      console.log(`  ${day}: ${imgFile}`);
+
+      const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}\n\n${post.hashtags}`;
+      console.log(`${'━'.repeat(60)}`);
+      console.log(`  ${LABELS[day]}`);
+      console.log(`${'━'.repeat(60)}`);
+      console.log(`\n${fullText}\n`);
+      console.log(`  Image: ${imgFile}\n`);
     }
-    console.log('[CLI] All test images generated.');
+    console.log(`${'━'.repeat(60)}`);
+    console.log(`  All 5 images saved to ${IMG_DIR}`);
+    console.log(`${'━'.repeat(60)}`);
     process.exit(0);
   })();
 }
