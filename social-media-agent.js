@@ -21,11 +21,19 @@ function getTwitterClient() {
   });
 }
 
-// ── Content Bank ──────────────────────────────────────────────────
-// Each day has multiple post variations — agent cycles through them
+// ── Week number helper — drives content rotation ──────────────────
+function getISOWeek() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const w1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d.getTime() - w1.getTime()) / 86400000 - 3 + ((w1.getDay() + 6) % 7)) / 7);
+}
+
+// ── Content Bank — 8 variations per day (8-week rotation) ─────────
 const CONTENT = {
 
-  // ── MONDAY 9am — CyberShield security post ──────────────────
+  // ── MONDAY 9am — CyberShield security ───────────────────────
   monday: {
     brand: 'CyberShield',
     hashtags: '#CyberSecurity #SmallBusiness #DataBreach #CyberShield #InfoSec',
@@ -72,10 +80,48 @@ The only question is when.
 CyberShield runs the same scans hackers use, but gives YOU the results first. 60 seconds. Full vulnerability report. Actionable fixes.`,
         cta: 'Drop SCAN in the comments to check your site.',
       },
+      {
+        hook: '60% of small businesses close within 6 months of a cyberattack.',
+        body: `Not because the attack itself is fatal. Because the downtime, data loss, and customer trust erosion add up faster than most owners realize.
+
+The businesses that survive? They knew their vulnerabilities before attackers did.
+
+CyberShield gives you a full security audit in 60 seconds. SSL status, open ports, outdated software, exposed admin panels — all of it.`,
+        cta: 'Drop SCAN in the comments — find your blind spots before hackers do.',
+      },
+      {
+        hook: 'Your SSL certificate expired 3 days ago. Did you notice?',
+        body: `Probably not. Most business owners don't — until a customer sees the "Not Secure" warning and bounces.
+
+Or worse, until an attacker uses that gap to intercept data.
+
+Expired certs. Misconfigured headers. Open ports you forgot about. These are the things that turn a safe website into a target.
+
+CyberShield monitors all of it and alerts you before it becomes a problem.`,
+        cta: 'Drop SCAN in the comments to check your site\'s status.',
+      },
+      {
+        hook: 'The average time to detect a data breach? 204 days.',
+        body: `That's almost 7 months of hackers inside your systems. Reading emails. Downloading files. Stealing customer data.
+
+Small businesses don't have the security teams that enterprises use to catch breaches early.
+
+That's why we built CyberShield — continuous vulnerability monitoring that catches exposures the day they appear, not 7 months later.`,
+        cta: 'Drop SCAN in the comments to see your exposure.',
+      },
+      {
+        hook: 'You wouldn\'t leave your office door unlocked overnight. Why is your website different?',
+        body: `Open ports are unlocked doors. Expired SSL is a broken window. An exposed admin panel is a sign that says "come on in."
+
+Most small businesses have at least one of these right now. They just don't know it.
+
+CyberShield checks for all of them. One scan. 60 seconds. Full vulnerability report with step-by-step fixes.`,
+        cta: 'Drop SCAN in the comments — let\'s lock your doors.',
+      },
     ],
   },
 
-  // ── TUESDAY 11am — AutoFlow building in public ─────────────
+  // ── TUESDAY 11am — AutoFlow building in public ──────────────
   tuesday: {
     brand: 'AutoFlow',
     hashtags: '#AIAutomation #SmallBusiness #LeadGeneration #AutoFlow #Entrepreneur',
@@ -109,21 +155,59 @@ Now one person with AutoFlow outperforms a team of 5 doing manual outreach.`,
 3. AI follow-ups convert 3x better than human-written ones
 4. Tuesday and Wednesday mornings get the highest reply rates
 
-We're building AutoFlow in public because transparency builds trust.
-
-Every metric. Every failure. Every win.`,
+We're building AutoFlow to prove that AI outreach can outperform any manual process — without cutting corners on quality.`,
         cta: 'Drop AUTO in the comments — I\'ll add you to the early access list.',
       },
       {
-        hook: 'I replaced a $4,000/month SDR with an AI agent. Here\'s what happened.',
-        body: `Month 1: 2,400 personalized emails sent. 380 replies. 47 meetings booked.
+        hook: 'One AI agent now does the work of an entire outbound sales team.',
+        body: `2,400 personalized emails sent last month. 380 replies. 47 meetings booked.
 
 The AI doesn't take breaks. Doesn't have bad days. Doesn't forget to follow up.
 
 And every email sounds like a human wrote it — because the AI researches each prospect before writing.
 
-This isn't the future. This is what we shipped last Tuesday.`,
+This isn't the future. This is what AutoFlow shipped last week.`,
         cta: 'Drop AUTO in the comments to try it yourself.',
+      },
+      {
+        hook: 'The #1 reason cold emails fail isn\'t your offer. It\'s your first line.',
+        body: `"I hope this email finds you well" — deleted.
+"I noticed your company" — deleted.
+"Just following up" — deleted.
+
+AI-generated first lines reference something specific: a recent blog post, a job listing, a product launch.
+
+That's the difference between getting ignored and getting a reply. AutoFlow writes those lines at scale.`,
+        cta: 'Drop AUTO in the comments to see AI-written examples.',
+      },
+      {
+        hook: 'We A/B tested 50 cold email subject lines. The winner surprised us.',
+        body: `It wasn't clever. It wasn't long. It wasn't personalized.
+
+The highest-performing subject line was 3 words. Direct. No tricks.
+
+The lesson? Prospects don't want to be impressed. They want to know why you're emailing.
+
+AutoFlow tests subject lines automatically and adapts to what works for each industry.`,
+        cta: 'Drop AUTO in the comments for the full results.',
+      },
+      {
+        hook: 'Most businesses give up on a lead after 2 emails. The data says wait until 5.',
+        body: `80% of deals close between the 5th and 12th touchpoint. Most salespeople stop at 2.
+
+Not because they don't care — because manually following up with hundreds of prospects is exhausting.
+
+AutoFlow sends intelligent follow-ups that reference previous conversations. Automatically. On the right schedule.`,
+        cta: 'Drop AUTO in the comments if you\'re leaving deals on the table.',
+      },
+      {
+        hook: 'Your CRM has 10,000 contacts. How many have you actually emailed this month?',
+        body: `For most businesses, the answer is embarrassingly low.
+
+Leads go cold. Follow-ups slip. Opportunities die in your pipeline.
+
+AutoFlow connects to your CRM and re-engages cold leads with personalized outreach — automatically. No copying. No pasting. No forgetting.`,
+        cta: 'Drop AUTO in the comments to wake up your pipeline.',
       },
     ],
   },
@@ -182,10 +266,52 @@ Same person. Same hours in the day. 100x the output.
 The gap between businesses using AI and those that aren't is getting wider every week.`,
         cta: 'Drop AUTO in the comments — let\'s close that gap.',
       },
+      {
+        hook: 'We tracked every lead that replied to an AI-written email. Here\'s where they came from.',
+        body: `Top 3 sources of high-quality replies:
+1. LinkedIn profile research — referencing mutual connections or shared interests
+2. Company news — funding rounds, product launches, new hires
+3. Pain point matching — aligning your offer to their biggest challenge
+
+Generic emails get generic results. AutoFlow personalizes all three automatically.`,
+        cta: 'Drop AUTO in the comments to see your industry\'s results.',
+      },
+      {
+        hook: 'The 5-minute setup that replaced 4 hours of daily prospecting.',
+        body: `Step 1: Tell AutoFlow your ideal customer profile
+Step 2: Set your outreach tone and offer
+Step 3: Hit "launch"
+
+That's it. The AI handles prospect research, email writing, sending, and follow-ups.
+
+One client went from 10 emails a day to 300 — with better reply rates on the AI-written ones.`,
+        cta: 'Drop AUTO in the comments to set up yours.',
+      },
+      {
+        hook: 'Your best salesperson closes 20% of qualified leads. AI follows up with the other 80%.',
+        body: `Most lost deals aren't bad fits. They're bad timing.
+
+The prospect was busy. They meant to reply. They forgot.
+
+AutoFlow sends perfectly timed follow-ups that feel natural — not pushy. And it does it for every single lead, not just the ones you remember.`,
+        cta: 'Drop AUTO in the comments to stop leaving money on the table.',
+      },
+      {
+        hook: 'We just launched multi-step campaigns in AutoFlow. The results are insane.',
+        body: `Step 1: Personalized cold email (12% reply rate)
+Step 2: Value-add follow-up 3 days later (8% reply rate)
+Step 3: Social proof email day 7 (6% reply rate)
+Step 4: Breakup email day 14 (4% reply rate)
+
+Combined sequence reply rate: 26%.
+
+All written by AI. All personalized per prospect. All automated.`,
+        cta: 'Drop AUTO in the comments to try multi-step campaigns.',
+      },
     ],
   },
 
-  // ── THURSDAY 2pm — CyberShield breach/threat post ───────────
+  // ── THURSDAY 2pm — CyberShield breach/threat ────────────────
   thursday: {
     brand: 'CyberShield',
     hashtags: '#CyberSecurity #SmallBusiness #DataBreach #CyberShield #InfoSec',
@@ -238,92 +364,67 @@ The breach already happened. The question is whether you know about it.
 CyberShield scans every known breach database in seconds.`,
         cta: 'Drop SCAN in the comments — I\'ll check yours free.',
       },
-    ],
-  },
-
-  // ── FRIDAY 10am — Founder story post ────────────────────────
-  friday: {
-    brand: 'AutoFlow',
-    hashtags: '#BuildingInPublic #Founder #StartupLife #AI #Entrepreneur',
-    posts: [
       {
-        hook: 'I\'m building two startups at the same time. Here\'s why.',
-        body: `CyberShield protects small businesses from hackers.
-AutoFlow helps them grow with AI-powered outreach.
+        hook: 'The dark web has a price list. Your company\'s data might be on it.',
+        body: `Credit card numbers: $5-$30
+Login credentials: $1-$20
+Full identity packages: $30-$100
+Company database access: $500+
 
-Security + Growth. Two sides of the same problem: small businesses don't have enterprise resources.
+When your employees reuse passwords across personal and work accounts, one breach exposes everything.
 
-So we're building enterprise-grade tools at small business prices.
-
-Every week I share the wins, the losses, and the real numbers. No vanity metrics. No fluff.`,
-        cta: 'Follow along if you\'re building something too.',
+CyberShield monitors breach databases in real time and alerts you the moment your team's data appears.`,
+        cta: 'Drop SCAN in the comments — find out if you\'re already listed.',
       },
       {
-        hook: 'Nobody talks about the worst part of being a founder.',
-        body: `It's not the long hours.
-It's not the rejection.
+        hook: 'Phishing attacks have increased 300% since 2020. Your team isn\'t ready.',
+        body: `The emails look real. The domains look real. Even IT professionals get fooled.
 
-It's the silence.
+The latest attacks use AI to generate phishing emails that perfectly mimic your vendors, your bank, even your CEO.
 
-You ship a feature at 2am. Nobody notices. You fix a critical bug. Nobody knows. You land your first customer. Nobody celebrates with you.
-
-That's why I build in public. The internet becomes your co-founder.
-
-Every week I share real metrics from CyberShield and AutoFlow. Revenue. Users. Failures. Everything.`,
-        cta: 'Drop a comment if you relate to this.',
+CyberShield includes security awareness training that teaches your team to spot these attacks — with real-world examples updated monthly.`,
+        cta: 'Drop SCAN in the comments to test your team\'s readiness.',
       },
       {
-        hook: 'Week 1 revenue: $0. This week: here\'s the real number.',
-        body: `I'm not going to pretend we're killing it from day one.
+        hook: 'One compromised employee account can expose your entire company.',
+        body: `It starts with a leaked password from an old breach. The attacker logs in. Escalates access. Downloads client data.
 
-Building a startup is messy. Some weeks you feel unstoppable. Other weeks you question everything.
+By the time you notice, they've been inside for weeks.
 
-But here's what I know: consistency compounds.
+This isn't a hypothetical. It happens to small businesses every day.
 
-Every email we send, every feature we ship, every customer we help — it adds up.
-
-I'm sharing the entire journey because the "overnight success" narrative is a lie.`,
-        cta: 'Follow for the real startup story. No filters.',
+CyberShield catches it at step one — monitoring for leaked credentials before attackers can use them.`,
+        cta: 'Drop SCAN in the comments to check your team\'s accounts.',
       },
       {
-        hook: 'The best startup advice I ever got was 3 words: "Ship it today."',
-        body: `Not "make it perfect."
-Not "do more research."
-Not "wait until you're ready."
+        hook: '90% of successful cyberattacks start with a single email.',
+        body: `Not a sophisticated hack. Not a zero-day exploit.
 
-Ship it today.
+A single email with a link that looks legitimate.
 
-We launched CyberShield with one feature: a vulnerability scanner. That's it. No breach monitoring. No training modules. No team management.
+Your employee clicks it. Enters their credentials. Game over.
 
-One feature. One landing page. One cold email.
+The best defense isn't a firewall — it's knowing which of your employees' credentials are already compromised and which accounts need password resets.
 
-Everything else came from customer feedback after we shipped.`,
-        cta: 'What\'s the best advice you\'ve received? Drop it below.',
+CyberShield scans for exactly this.`,
+        cta: 'Drop SCAN in the comments to protect your team.',
       },
     ],
   },
 };
 
-// Track which variation we used last per day (persisted to disk)
-const STATE_FILE = path.resolve('agent-state.json');
-function loadState() {
-  try { return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); }
-  catch { return { monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0 }; }
-}
-function saveState(s) { fs.writeFileSync(STATE_FILE, JSON.stringify(s, null, 2)); }
-
+// ── Week-based post selection ─────────────────────────────────────
+// Uses ISO week number so each week automatically gets a different
+// post variation. With 8 posts per day, content repeats every 8 weeks.
 function pickPost(day) {
-  const state = loadState();
+  const week = getISOWeek();
   const posts = CONTENT[day].posts;
-  const idx = (state[day] || 0) % posts.length;
-  state[day] = idx + 1;
-  saveState(state);
+  const idx = (week - 1) % posts.length;
   return { ...posts[idx], brand: CONTENT[day].brand, hashtags: CONTENT[day].hashtags };
 }
 
 // ── LinkedIn Posting ──────────────────────────────────────────────
 async function uploadImageToLinkedIn(imagePath) {
-  // Step 1: Initialize upload
   const initRes = await fetch('https://api.linkedin.com/rest/images?action=initializeUpload', {
     method: 'POST',
     headers: {
@@ -348,7 +449,6 @@ async function uploadImageToLinkedIn(imagePath) {
   const uploadUrl = initData.value.uploadUrl;
   const imageUrn = initData.value.image;
 
-  // Step 2: Upload binary
   const imageBuffer = fs.readFileSync(imagePath);
   const uploadRes = await fetch(uploadUrl, {
     method: 'PUT',
@@ -466,7 +566,6 @@ async function executePost(day) {
   console.log(`Hook: ${post.hook}`);
   console.log('='.repeat(60));
 
-  // Generate image
   const imgFile = path.join(IMG_DIR, `${day}-${Date.now()}.png`);
   try {
     await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
@@ -475,16 +574,13 @@ async function executePost(day) {
     console.error('[Image] Generation failed:', err.message);
   }
 
-  // Build post text
   const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}\n\n${post.hashtags}`;
 
-  // Twitter has a 280-char limit — use a shorter version
   const tweetText = `${post.hook}\n\n${post.cta}\n\n${post.hashtags}`;
   const finalTweet = tweetText.length > 280
     ? `${post.hook}\n\n${post.cta}\n\n${post.hashtags.split(' ').slice(0, 3).join(' ')}`
     : tweetText;
 
-  // Post to both platforms
   const [liId, twId] = await Promise.allSettled([
     postToLinkedIn(fullText, fs.existsSync(imgFile) ? imgFile : null),
     postToTwitter(finalTweet, fs.existsSync(imgFile) ? imgFile : null),
@@ -497,14 +593,14 @@ async function executePost(day) {
 
 // ── Test Mode ─────────────────────────────────────────────────────
 async function runTestMode() {
-  console.log('Running test mode — generating 5 posts...\n');
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+  const week = getISOWeek();
+  console.log(`Running test mode — generating 4 posts (week ${week}, variation ${((week - 1) % 8) + 1}/8)\n`);
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday'];
   const labels = {
     monday: 'Mon  9am — CyberShield security',
     tuesday: 'Tue 11am — AutoFlow building in public',
     wednesday: 'Wed 12pm — AutoFlow results/automation',
     thursday: 'Thu  2pm — CyberShield breach/threat',
-    friday: 'Fri 10am — Founder story',
   };
   for (const day of days) {
     const post = pickPost(day);
@@ -517,7 +613,7 @@ async function runTestMode() {
     console.log(`Hashtags: ${post.hashtags}`);
     console.log(`Image: ${imgFile}`);
   }
-  console.log(`\nAll 5 images saved to ${IMG_DIR}`);
+  console.log(`\nAll 4 images saved to ${IMG_DIR}`);
   console.log('Done!');
 }
 
@@ -539,19 +635,18 @@ if (args[0] === 'test') {
   cron.schedule('0 11 * * 2', () => executePost('tuesday'));
   cron.schedule('0 12 * * 3', () => executePost('wednesday'));
   cron.schedule('0 14 * * 4', () => executePost('thursday'));
-  cron.schedule('0 10 * * 5', () => executePost('friday'));
 
   console.log(`
  ┌──────────────────────────────────────────────────────────┐
- │  Social Media Agent — Running                           │
+ │  Social Media Agent — Running (4 days/week)             │
  │                                                         │
  │  Schedule (${process.env.TZ || 'server timezone'}):
  │    Mon  9:00 AM — CyberShield security                  │
  │    Tue 11:00 AM — AutoFlow building in public           │
  │    Wed 12:00 PM — AutoFlow results/automation           │
  │    Thu  2:00 PM — CyberShield breach/threat             │
- │    Fri 10:00 AM — Founder story                         │
  │                                                         │
+ │  Rotation: 8 variations/day (week ${getISOWeek()}, slot ${((getISOWeek() - 1) % 8) + 1}/8)
  │  Platforms: LinkedIn + Twitter/X                        │
  │  LinkedIn: ${LINKEDIN_TOKEN ? 'configured' : 'NOT SET — add LINKEDIN_ACCESS_TOKEN'}
  │  Twitter:  ${process.env.TWITTER_API_KEY ? 'configured' : 'NOT SET — add TWITTER_API_KEY'}

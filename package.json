@@ -9,8 +9,7 @@
     "agent:monday": "node social-media-agent.js monday",
     "agent:tuesday": "node social-media-agent.js tuesday",
     "agent:wednesday": "node social-media-agent.js wednesday",
-    "agent:thursday": "node social-media-agent.js thursday",
-    "agent:friday": "node social-media-agent.js friday"
+    "agent:thursday": "node social-media-agent.js thursday"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.1",
