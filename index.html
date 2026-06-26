@@ -1404,7 +1404,7 @@
           <li><span class="chk">✓</span> Full source code included</li>
           <li><span class="chk">✓</span> Weekly performance optimization</li>
         </ul>
-        <button class="pkg-cta" data-package="starter">Get Started</button>
+        <a href="https://buy.stripe.com/7sYbJ28PX8Dx1iX8sG4ZG0H" class="pkg-cta">Get Started</a>
       </div>
 
       <div class="pkg featured reveal">
@@ -1422,7 +1422,7 @@
           <li><span class="chk">✓</span> Daily summary emails</li>
           <li><span class="chk">✓</span> Weekly performance optimization</li>
         </ul>
-        <button class="pkg-cta" data-package="pro">Get Started</button>
+        <a href="https://buy.stripe.com/9B69AU0jrf1VgdRdN04ZG0I" class="pkg-cta">Get Started</a>
       </div>
 
       <div class="pkg reveal">
@@ -1796,36 +1796,6 @@
     demoInterval = setInterval(() => switchScreen((currentScreen+1)%4), 5000);
   })();
 
-  // ── Stripe Checkout ───────────────────────────────────────
-  document.querySelectorAll('.pkg-cta[data-package]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const pkg = btn.dataset.package;
-      const original = btn.textContent;
-      btn.textContent = 'Redirecting…';
-      btn.disabled = true;
-      btn.style.opacity = '0.75';
-      try {
-        const res = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ package: pkg }),
-        });
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error(data.error || 'Checkout failed');
-        }
-      } catch (err) {
-        btn.textContent = 'Error — try again';
-        btn.style.opacity = '1';
-        setTimeout(() => {
-          btn.textContent = original;
-          btn.disabled = false;
-        }, 2500);
-      }
-    });
-  });
 
   // ── Hamburger ──────────────────────────────────────────────
   const hamburger = document.querySelector('.hamburger');
