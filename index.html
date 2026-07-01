@@ -2104,11 +2104,7 @@
 
   // ── Blueprint Lead Capture ────────────────────────────────
   (function () {
-    // Replace these with your actual Supabase project URL and anon key
-    const SUPABASE_URL = 'https://your-project.supabase.co';
-    const SUPABASE_ANON_KEY = 'your-supabase-anon-key';
-    // Replace with your Supabase Edge Function URL for sending the blueprint email
-    const BLUEPRINT_FUNCTION_URL = SUPABASE_URL + '/functions/v1/send-blueprint';
+    const BLUEPRINT_FUNCTION_URL = 'https://swdlysjbsxlqdlvhobms.supabase.co/functions/v1/send-blueprint';
 
     document.getElementById('blueprintForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -2123,37 +2119,13 @@
       msg.style.display = 'none';
 
       try {
-        // 1. Save lead to Supabase
-        const saveRes = await fetch(`${SUPABASE_URL}/rest/v1/blueprint_leads`, {
+        const res = await fetch(BLUEPRINT_FUNCTION_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Prefer': 'return=minimal',
-          },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-            industry: data.industry,
-            created_at: new Date().toISOString(),
-          }),
-        });
-
-        if (!saveRes.ok && saveRes.status !== 201) {
-          const err = await saveRes.text();
-          throw new Error(err);
-        }
-
-        // 2. Trigger blueprint email via Supabase Edge Function
-        await fetch(BLUEPRINT_FUNCTION_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: data.name, email: data.email, industry: data.industry }),
         });
+
+        if (!res.ok) throw new Error(await res.text());
 
         msg.className = 'bp-msg success';
         msg.textContent = '✓ Blueprint request received! Check your inbox within 24 hours.';
