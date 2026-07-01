@@ -576,6 +576,98 @@
     .founder-perk-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.62; }
     .founder-cta { position: relative; z-index: 2; }
 
+    /* ── BLUEPRINT CAPTURE ─────────────────────────────────────── */
+    #blueprint { background: var(--bg2); }
+    .blueprint-inner {
+      max-width: 680px; margin: 0 auto; text-align: center;
+    }
+    .blueprint-card {
+      background-color: var(--card);
+      background-image:
+        linear-gradient(135deg, rgba(255,107,0,0.07) 0%, rgba(255,215,0,0.04) 40%, transparent 65%),
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: auto, 40px 40px, 40px 40px;
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 3rem 2.5rem;
+      position: relative; overflow: hidden;
+      box-shadow: 0 4px 32px rgba(255,107,0,0.10), var(--shadow-card);
+      margin-top: 3rem;
+    }
+    .blueprint-card::after {
+      content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 50%;
+      background: linear-gradient(105deg, transparent 30%, rgba(255,200,120,0.04) 40%,
+        rgba(255,255,255,0.07) 50%, rgba(255,130,0,0.04) 60%, transparent 70%);
+      transform: translateX(-160%) skewX(-20deg); pointer-events: none; z-index: 0;
+    }
+    .blueprint-card:hover::after { animation: holoSweep 0.9s var(--ease) forwards; }
+    .blueprint-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--accent-dim); border: 1px solid var(--border);
+      border-radius: 20px; padding: 0.28rem 1rem;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent); margin-bottom: 1.4rem;
+      position: relative; z-index: 1;
+    }
+    .blueprint-badge .bp-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); animation: demoPulse 1.5s infinite;
+    }
+    .blueprint-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.3rem); font-weight: 800; color: #fff;
+      letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem;
+      position: relative; z-index: 1;
+    }
+    .blueprint-title .hl {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .blueprint-sub {
+      font-size: 1rem; color: var(--muted); line-height: 1.72;
+      margin-bottom: 2rem; position: relative; z-index: 1;
+    }
+    .blueprint-form { display: flex; flex-direction: column; gap: 0.85rem; position: relative; z-index: 1; }
+    .bp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    .bp-field { display: flex; flex-direction: column; gap: 0.35rem; text-align: left; }
+    .bp-field label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+    .bp-field input,
+    .bp-field select {
+      background: var(--bg); border: 1px solid var(--border-dim); border-radius: 8px;
+      color: var(--text); padding: 0.75rem 1rem; font-family: inherit;
+      font-size: 0.9rem; outline: none; width: 100%;
+      transition: border-color var(--t2) ease, box-shadow var(--t2) ease;
+    }
+    .bp-field input:focus,
+    .bp-field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,0,0.1); }
+    .bp-field select option { background: var(--bg2); }
+    .bp-submit {
+      background: var(--accent); color: #fff; border: none;
+      padding: 0.95rem 2rem; border-radius: 9px;
+      font-weight: 700; font-size: 1rem; font-family: inherit;
+      cursor: pointer; width: 100%; margin-top: 0.3rem;
+      transition: transform var(--t2) var(--spring), box-shadow var(--t2) ease;
+      box-shadow: 0 6px 24px rgba(255,107,0,0.35);
+      position: relative; z-index: 1;
+    }
+    .bp-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(255,107,0,0.5); }
+    .bp-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .bp-guarantee {
+      font-size: 0.78rem; color: var(--muted); margin-top: 0.75rem;
+      position: relative; z-index: 1;
+    }
+    .bp-guarantee span { color: var(--accent); font-weight: 600; }
+    .bp-msg {
+      display: none; text-align: center; padding: 0.85rem 1rem;
+      border-radius: 9px; font-size: 0.875rem; margin-top: 0.5rem;
+      position: relative; z-index: 1;
+    }
+    .bp-msg.success { background: rgba(0,200,100,0.1); color: #00c864; border: 1px solid rgba(0,200,100,0.2); display: block; }
+    .bp-msg.error { background: rgba(255,50,50,0.1); color: #ff5555; border: 1px solid rgba(255,50,50,0.2); display: block; }
+    @media (max-width: 520px) {
+      .bp-row { grid-template-columns: 1fr; }
+      .blueprint-card { padding: 2rem 1.4rem; }
+    }
+
     /* ── FAQ ───────────────────────────────────────────────────── */
     #faq { background: var(--bg); }
     .faq-list { margin-top: 3rem; max-width: 760px; }
@@ -935,6 +1027,7 @@
     <li><a href="#services">Services</a></li>
     <li><a href="#packages">Packages</a></li>
     <li><a href="#testimonials">Early Access</a></li>
+    <li><a href="#blueprint">Free Blueprint</a></li>
     <li><a href="#faq">FAQ</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
@@ -1586,6 +1679,51 @@
   </div>
 </section>
 
+<!-- ── BLUEPRINT CAPTURE ─────────────────────────────────────── -->
+<section id="blueprint">
+  <div class="section-inner blueprint-inner">
+    <div class="blueprint-card reveal">
+      <div class="blueprint-badge"><span class="bp-dot"></span> Free — No Credit Card</div>
+      <h2 class="blueprint-title">See exactly what we'd build<br>for <span class="hl">your business</span></h2>
+      <p class="blueprint-sub">Tell us your industry and we'll send you a free automation blueprint in 24 hours — a custom breakdown of the exact systems we'd deploy, the ROI you can expect, and the first automations we'd turn on.</p>
+      <form class="blueprint-form" id="blueprintForm">
+        <div class="bp-row">
+          <div class="bp-field">
+            <label>Your Name</label>
+            <input type="text" name="name" placeholder="John Smith" required />
+          </div>
+          <div class="bp-field">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="john@company.com" required />
+          </div>
+        </div>
+        <div class="bp-field">
+          <label>Industry / Business Type</label>
+          <select name="industry" required>
+            <option value="" disabled selected>Select your industry...</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Dental / Medical">Dental / Medical</option>
+            <option value="Insurance">Insurance</option>
+            <option value="Law Firm">Law Firm</option>
+            <option value="Roofing / Contractors">Roofing / Contractors</option>
+            <option value="Accounting / CPA">Accounting / CPA</option>
+            <option value="Mortgage">Mortgage</option>
+            <option value="Staffing / Recruiting">Staffing / Recruiting</option>
+            <option value="E-commerce">E-commerce</option>
+            <option value="SaaS / Software">SaaS / Software</option>
+            <option value="Gym / Fitness">Gym / Fitness</option>
+            <option value="Restaurant / Hospitality">Restaurant / Hospitality</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <button type="submit" class="bp-submit" id="bpBtn">Send Me My Free Blueprint →</button>
+        <p class="bp-guarantee"><span>✓ Free.</span> No pitch. No obligation. Just your custom blueprint — delivered within 24 hours.</p>
+        <div class="bp-msg" id="bpMsg"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
 <!-- ── FAQ ───────────────────────────────────────────────────── -->
 <section id="faq">
   <div class="section-inner">
@@ -1963,6 +2101,73 @@
     btn.textContent = original;
     btn.disabled = false;
   });
+
+  // ── Blueprint Lead Capture ────────────────────────────────
+  (function () {
+    // Replace these with your actual Supabase project URL and anon key
+    const SUPABASE_URL = 'https://your-project.supabase.co';
+    const SUPABASE_ANON_KEY = 'your-supabase-anon-key';
+    // Replace with your Supabase Edge Function URL for sending the blueprint email
+    const BLUEPRINT_FUNCTION_URL = SUPABASE_URL + '/functions/v1/send-blueprint';
+
+    document.getElementById('blueprintForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('bpBtn');
+      const msg = document.getElementById('bpMsg');
+      const data = Object.fromEntries(new FormData(form));
+
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      msg.className = 'bp-msg';
+      msg.style.display = 'none';
+
+      try {
+        // 1. Save lead to Supabase
+        const saveRes = await fetch(`${SUPABASE_URL}/rest/v1/blueprint_leads`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            industry: data.industry,
+            created_at: new Date().toISOString(),
+          }),
+        });
+
+        if (!saveRes.ok && saveRes.status !== 201) {
+          const err = await saveRes.text();
+          throw new Error(err);
+        }
+
+        // 2. Trigger blueprint email via Supabase Edge Function
+        await fetch(BLUEPRINT_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ name: data.name, email: data.email, industry: data.industry }),
+        });
+
+        msg.className = 'bp-msg success';
+        msg.textContent = '✓ Blueprint request received! Check your inbox within 24 hours.';
+        form.reset();
+      } catch (err) {
+        msg.className = 'bp-msg error';
+        msg.textContent = '✗ Something went wrong. Email us at njirus@cybrshieldtech.com and we\'ll send it manually.';
+        console.error('Blueprint form error:', err);
+      }
+
+      btn.textContent = 'Send Me My Free Blueprint →';
+      btn.disabled = false;
+    });
+  })();
 
   // ── Smooth nav active state on scroll ─────────────────────
   const sections = document.querySelectorAll('section[id]');
