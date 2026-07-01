@@ -184,8 +184,8 @@ Deno.serve(async (req: Request) => {
     const blueprint = await generateBlueprint(name, industry);
 
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_KEY')!,
+      Deno.env.get('DB_URL')!,
+      Deno.env.get('DB_SERVICE_KEY')!,
     );
 
     const { error: dbError } = await supabase.from('blueprints').insert({
