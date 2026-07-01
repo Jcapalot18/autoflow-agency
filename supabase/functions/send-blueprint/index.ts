@@ -1,6 +1,3 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.55.0';
-
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -79,15 +76,9 @@ function getIndustryData(industry: string) {
 }
 
 async function generateBlueprint(name: string, industry: string): Promise<string> {
-  const client = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
   const data = getIndustryData(industry);
 
-  const message = await client.messages.create({
-    model: 'claude-fable-5',
-    max_tokens: 1200,
-    messages: [{
-      role: 'user',
-      content: `You are AutoFlow — an AI automation agency. Generate a custom 1-page automation blueprint for ${name}, who runs a ${industry} business.
+  const prompt = `You are AutoFlow — an AI automation agency. Generate a custom 1-page automation blueprint for ${name}, who runs a ${industry} business.
 
 Industry pain: ${data.pain}
 Expected ROI: ${data.roi}
@@ -115,19 +106,65 @@ Reply to this email with "Let's build it" and we'll schedule a 30-minute build c
 
 — Njiru, AutoFlow
 
-Keep it tight — specific, concrete, no fluff. Total length: 350–450 words.`,
-    }],
+Keep it tight — specific, concrete, no fluff. Total length: 350–450 words.`;
+
+  const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': Deno.env.get('ANTHROPIC_API_KEY')!,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-fable-5',
+      max_tokens: 1200,
+      messages: [{ role: 'user', content: prompt }],
+    }),
   });
 
-  return (message.content[0] as { type: string; text: string }).text;
+  const aiText = await aiResp.text();
+  if (!aiResp.ok) {
+    throw new Error(`Anthropic API error ${aiResp.status}: ${aiText}`);
+  }
+
+  const aiJson = JSON.parse(aiText);
+  // claude-fable-5 returns thinking blocks before text blocks — find the text one
+  const textBlock = aiJson.content?.find((c: { type: string }) => c.type === 'text');
+  if (!textBlock?.text) {
+    throw new Error(`Unexpected AI response: ${aiText.substring(0, 300)}`);
+  }
+  return textBlock.text as string;
+}
+
+async function saveToDb(name: string, email: string, industry: string, blueprint: string): Promise<void> {
+  const dbUrl = Deno.env.get('DB_URL')!;
+  const dbKey = Deno.env.get('DB_SERVICE_KEY')!;
+
+  const dbResp = await fetch(`${dbUrl}/rest/v1/blueprints`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': dbKey,
+      'Authorization': `Bearer ${dbKey}`,
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify({ name, email, industry, blueprint_content: blueprint }),
+  });
+
+  if (!dbResp.ok) {
+    const errText = await dbResp.text();
+    console.error(`DB insert error ${dbResp.status}: ${errText}`);
+  }
 }
 
 async function sendBlueprintEmail(name: string, email: string, industry: string, blueprint: string): Promise<void> {
+  const escapedBlueprint = blueprint.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
+      'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
     },
     body: JSON.stringify({
       from: 'AutoFlow <njirus@cybrshieldtech.com>',
@@ -143,7 +180,7 @@ async function sendBlueprintEmail(name: string, email: string, industry: string,
     <p style="color: #e8eaf0; font-size: 15px; margin: 0 0 24px;">Hi ${name},</p>
     <p style="color: #e8eaf0; font-size: 15px; margin: 0 0 24px;">Here's the custom automation blueprint for your ${industry} business.</p>
     <div style="background: #0d1120; border: 1px solid rgba(255,107,0,0.25); border-radius: 12px; padding: 28px 32px; margin-bottom: 24px;">
-      <pre style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; color: #e8eaf0; line-height: 1.75; white-space: pre-wrap; margin: 0;">${blueprint.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+      <pre style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; color: #e8eaf0; line-height: 1.75; white-space: pre-wrap; margin: 0;">${escapedBlueprint}</pre>
     </div>
     <p style="color: #8892a4; font-size: 13px; line-height: 1.7; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; margin: 0;">
       AutoFlow — AI Automation Agency<br>
@@ -181,22 +218,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const blueprint = await generateBlueprint(name, industry);
+    const blueprint = await generateBlueprint(name, email.includes('@') ? industry : industry);
 
-    const supabase = createClient(
-      Deno.env.get('DB_URL')!,
-      Deno.env.get('DB_SERVICE_KEY')!,
-    );
-
-    const { error: dbError } = await supabase.from('blueprints').insert({
-      name,
-      email,
-      industry,
-      blueprint_content: blueprint,
-      created_at: new Date().toISOString(),
-    });
-
-    if (dbError) console.error('DB insert error:', dbError.message);
+    await saveToDb(name, email, industry, blueprint);
 
     await sendBlueprintEmail(name, email, industry, blueprint);
 
@@ -204,8 +228,9 @@ Deno.serve(async (req: Request) => {
       status: 200, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('send-blueprint error:', err);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('send-blueprint error:', msg);
+    return new Response(JSON.stringify({ error: 'Internal server error', detail: msg }), {
       status: 500, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }

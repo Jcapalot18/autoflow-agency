@@ -1,5 +1,2 @@
-[project]
-id = "swdlysjbsxlqdlvhobms"
-
 [functions.send-blueprint]
 verify_jwt = false
