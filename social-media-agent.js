@@ -1,15 +1,10 @@
 import 'dotenv/config';
 import cron from 'node-cron';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
 import { TwitterApi } from 'twitter-api-v2';
-import { generateImage } from './generate-image.js';
 
 // ── Config ────────────────────────────────────────────────────────
 const LINKEDIN_TOKEN    = process.env.LINKEDIN_ACCESS_TOKEN;
 const LINKEDIN_PERSON   = process.env.LINKEDIN_PERSON_URN;  // urn:li:person:XXXXX
-const IMG_DIR = path.resolve('generated-images');
 
 function getTwitterClient() {
   if (!process.env.TWITTER_API_KEY || !process.env.TWITTER_API_SECRET) return null;
@@ -424,62 +419,13 @@ function pickPost(day) {
 }
 
 // ── LinkedIn Posting ──────────────────────────────────────────────
-async function uploadImageToLinkedIn(imagePath) {
-  const initRes = await fetch('https://api.linkedin.com/rest/images?action=initializeUpload', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${LINKEDIN_TOKEN}`,
-      'Content-Type': 'application/json',
-      'LinkedIn-Version': '202401',
-      'X-Restli-Protocol-Version': '2.0.0',
-    },
-    body: JSON.stringify({
-      initializeUploadRequest: {
-        owner: LINKEDIN_PERSON,
-      },
-    }),
-  });
-
-  if (!initRes.ok) {
-    const err = await initRes.text();
-    throw new Error(`LinkedIn image init failed (${initRes.status}): ${err}`);
-  }
-
-  const initData = await initRes.json();
-  const uploadUrl = initData.value.uploadUrl;
-  const imageUrn = initData.value.image;
-
-  const imageBuffer = fs.readFileSync(imagePath);
-  const uploadRes = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${LINKEDIN_TOKEN}`,
-      'Content-Type': 'application/octet-stream',
-    },
-    body: imageBuffer,
-  });
-
-  if (!uploadRes.ok) {
-    const err = await uploadRes.text();
-    throw new Error(`LinkedIn image upload failed (${uploadRes.status}): ${err}`);
-  }
-
-  return imageUrn;
-}
-
-async function postToLinkedIn(text, imagePath) {
+async function postToLinkedIn(text) {
   if (!LINKEDIN_TOKEN || !LINKEDIN_PERSON) {
     console.log('[LinkedIn] Skipped — LINKEDIN_ACCESS_TOKEN or LINKEDIN_PERSON_URN not set');
     return null;
   }
 
   try {
-    let imageUrn = null;
-    if (imagePath && fs.existsSync(imagePath)) {
-      imageUrn = await uploadImageToLinkedIn(imagePath);
-      console.log(`[LinkedIn] Image uploaded: ${imageUrn}`);
-    }
-
     const postBody = {
       author: LINKEDIN_PERSON,
       commentary: text,
@@ -491,15 +437,6 @@ async function postToLinkedIn(text, imagePath) {
       },
       lifecycleState: 'PUBLISHED',
     };
-
-    if (imageUrn) {
-      postBody.content = {
-        media: {
-          title: 'Post image',
-          id: imageUrn,
-        },
-      };
-    }
 
     const res = await fetch('https://api.linkedin.com/rest/posts', {
       method: 'POST',
@@ -527,7 +464,7 @@ async function postToLinkedIn(text, imagePath) {
 }
 
 // ── Twitter/X Posting ─────────────────────────────────────────────
-async function postToTwitter(text, imagePath) {
+async function postToTwitter(text) {
   const client = getTwitterClient();
   if (!client) {
     console.log('[Twitter] Skipped — TWITTER_API_KEY not set');
@@ -535,20 +472,7 @@ async function postToTwitter(text, imagePath) {
   }
 
   try {
-    let mediaId = null;
-    if (imagePath && fs.existsSync(imagePath)) {
-      const imageBuffer = fs.readFileSync(imagePath);
-      const uploaded = await client.v1.uploadMedia(imageBuffer, { mimeType: 'image/png' });
-      mediaId = uploaded;
-      console.log(`[Twitter] Image uploaded: ${mediaId}`);
-    }
-
-    const tweetBody = { text };
-    if (mediaId) {
-      tweetBody.media = { media_ids: [mediaId] };
-    }
-
-    const tweet = await client.v2.tweet(tweetBody);
+    const tweet = await client.v2.tweet({ text });
     console.log(`[Twitter] Posted successfully — ID: ${tweet.data.id}`);
     return tweet.data.id;
   } catch (err) {
@@ -566,14 +490,6 @@ async function executePost(day) {
   console.log(`Hook: ${post.hook}`);
   console.log('='.repeat(60));
 
-  const imgFile = path.join(IMG_DIR, `${day}-${Date.now()}.png`);
-  try {
-    await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
-    console.log(`[Image] Generated: ${imgFile}`);
-  } catch (err) {
-    console.error('[Image] Generation failed:', err.message);
-  }
-
   const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}\n\n${post.hashtags}`;
 
   const tweetText = `${post.hook}\n\n${post.cta}\n\n${post.hashtags}`;
@@ -582,8 +498,8 @@ async function executePost(day) {
     : tweetText;
 
   const [liId, twId] = await Promise.allSettled([
-    postToLinkedIn(fullText, fs.existsSync(imgFile) ? imgFile : null),
-    postToTwitter(finalTweet, fs.existsSync(imgFile) ? imgFile : null),
+    postToLinkedIn(fullText),
+    postToTwitter(finalTweet),
   ]);
 
   console.log(`[Result] LinkedIn: ${liId.status === 'fulfilled' ? liId.value || 'skipped' : liId.reason}`);
@@ -604,16 +520,12 @@ async function runTestMode() {
   };
   for (const day of days) {
     const post = pickPost(day);
-    const imgFile = path.join(IMG_DIR, `${day}.png`);
-    await generateImage({ hookLine: post.hook, brand: post.brand, outputPath: imgFile });
 
     const fullText = `${post.hook}\n\n${post.body}\n\n${post.cta}`;
     console.log(`\n--- ${day.toUpperCase()} (${labels[day]}) ---`);
     console.log(fullText);
     console.log(`Hashtags: ${post.hashtags}`);
-    console.log(`Image: ${imgFile}`);
   }
-  console.log(`\nAll 4 images saved to ${IMG_DIR}`);
   console.log('Done!');
 }
 
