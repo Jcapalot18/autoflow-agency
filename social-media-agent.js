@@ -25,6 +25,13 @@ function getISOWeek() {
   return 1 + Math.round(((d.getTime() - w1.getTime()) / 86400000 - 3 + ((w1.getDay() + 6) % 7)) / 7);
 }
 
+// ── Posting cycle — 3 posts every 2 weeks: Mon W1, Wed W1, Mon W2 ──
+// Odd ISO weeks are week 1 of the cycle (Monday + Wednesday post),
+// even ISO weeks are week 2 (Monday only).
+function isCycleWeek1() {
+  return getISOWeek() % 2 === 1;
+}
+
 // ── Content Bank — 8 variations per day (8-week rotation) ─────────
 const CONTENT = {
 
@@ -510,13 +517,11 @@ async function executePost(day) {
 // ── Test Mode ─────────────────────────────────────────────────────
 async function runTestMode() {
   const week = getISOWeek();
-  console.log(`Running test mode — generating 4 posts (week ${week}, variation ${((week - 1) % 8) + 1}/8)\n`);
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday'];
+  const days = isCycleWeek1() ? ['monday', 'wednesday'] : ['monday'];
+  console.log(`Running test mode — generating ${days.length} post(s) (week ${week}, variation ${((week - 1) % 8) + 1}/8, cycle week ${isCycleWeek1() ? 1 : 2})\n`);
   const labels = {
     monday: 'Mon  9am — CyberShield security',
-    tuesday: 'Tue 11am — AutoFlow building in public',
     wednesday: 'Wed 12pm — AutoFlow results/automation',
-    thursday: 'Thu  2pm — CyberShield breach/threat',
   };
   for (const day of days) {
     const post = pickPost(day);
@@ -543,22 +548,25 @@ if (args[0] === 'test') {
   });
 } else {
   // ── Daemon mode — register cron schedules ─────────────────────
-  cron.schedule('0 9 * * 1',  () => executePost('monday'));
-  cron.schedule('0 11 * * 2', () => executePost('tuesday'));
-  cron.schedule('0 12 * * 3', () => executePost('wednesday'));
-  cron.schedule('0 14 * * 4', () => executePost('thursday'));
+  // 3 posts every 2 weeks: Mon Week 1, Wed Week 1, Mon Week 2.
+  cron.schedule('0 9 * * 1', () => executePost('monday'));
+  cron.schedule('0 12 * * 3', () => {
+    if (isCycleWeek1()) {
+      executePost('wednesday');
+    } else {
+      console.log('[Schedule] Skipping Wednesday post — week 2 of the 2-week cycle');
+    }
+  });
 
   console.log(`
  ┌──────────────────────────────────────────────────────────┐
- │  Social Media Agent — Running (4 days/week)             │
+ │  Social Media Agent — Running (3 posts / 2 weeks)        │
  │                                                         │
  │  Schedule (${process.env.TZ || 'server timezone'}):
- │    Mon  9:00 AM — CyberShield security                  │
- │    Tue 11:00 AM — AutoFlow building in public           │
- │    Wed 12:00 PM — AutoFlow results/automation           │
- │    Thu  2:00 PM — CyberShield breach/threat             │
+ │    Mon  9:00 AM — CyberShield security (every week)      │
+ │    Wed 12:00 PM — AutoFlow results/automation (week 1 only)│
  │                                                         │
- │  Rotation: 8 variations/day (week ${getISOWeek()}, slot ${((getISOWeek() - 1) % 8) + 1}/8)
+ │  Rotation: 8 variations/day (week ${getISOWeek()}, slot ${((getISOWeek() - 1) % 8) + 1}/8, cycle week ${isCycleWeek1() ? 1 : 2})
  │  Platforms: LinkedIn + Twitter/X                        │
  │  LinkedIn: ${LINKEDIN_TOKEN ? 'configured' : 'NOT SET — add LINKEDIN_ACCESS_TOKEN'}
  │  Twitter:  ${process.env.TWITTER_API_KEY ? 'configured' : 'NOT SET — add TWITTER_API_KEY'}
