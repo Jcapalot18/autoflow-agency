@@ -83,14 +83,14 @@ async function isAlreadyTracked(twitterUserId) {
   return Array.isArray(rows) && rows.length > 0;
 }
 
-// ── DM generation via claude-fable-5 ─────────────────────────────
+// ── DM generation via claude-opus-4-8 ───────────────────────────────
 async function generateDm(displayName, handle, recentTweets) {
   const tweetContext = recentTweets.length > 0
     ? recentTweets.map((t, i) => `${i + 1}. "${t}"`).join('\n')
     : '(no recent tweets available)';
 
   const msg = await anthropic.messages.create({
-    model: 'claude-fable-5',
+    model: 'claude-opus-4-8',
     max_tokens: 500,
     messages: [{
       role: 'user',
@@ -113,7 +113,6 @@ Output: Just the DM text. Nothing else. No quotes around it.`,
     }],
   });
 
-  // claude-fable-5 returns thinking blocks — find the text block
   const textBlock = msg.content.find(b => b.type === 'text');
   return textBlock?.text?.trim() ?? '';
 }

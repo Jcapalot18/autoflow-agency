@@ -75,7 +75,7 @@ function parseEmailOutput(text) {
 // ── Core: Generate a single outreach email ────────────────────────
 export async function generateOutreachEmail({ businessName, city, industry, website = '', additionalContext = '' }) {
   const message = await client.messages.create({
-    model: 'claude-fable-5',
+    model: 'claude-opus-4-8',
     max_tokens: 900,
     temperature: 0.85,
     messages: [{
@@ -124,7 +124,7 @@ export async function generateSubjectVariants({ businessName, city, industry }) 
   const roi = getIndustryROI(industry);
 
   const message = await client.messages.create({
-    model: 'claude-fable-5',
+    model: 'claude-opus-4-8',
     max_tokens: 300,
     temperature: 0.95,
     messages: [{
@@ -155,7 +155,7 @@ if (process.argv[1].endsWith('autoflow-outreach-agent.js')) {
   const command = process.argv[2] || 'demo';
 
   if (command === 'demo') {
-    console.log('\nAutoFlow Outreach Agent — claude-fable-5\n' + '─'.repeat(50));
+    console.log('\nAutoFlow Outreach Agent — claude-opus-4-8\n' + '─'.repeat(50));
 
     const demos = [
       { businessName: 'Dallas Real Estate Group', city: 'Dallas, TX', industry: 'real estate', website: 'dallasrealtygroup.com' },
