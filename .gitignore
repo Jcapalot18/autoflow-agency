@@ -5,3 +5,4 @@ node_modules
 generated-images/
 agent-state.json
 test-*.png
+supabase/.temp/

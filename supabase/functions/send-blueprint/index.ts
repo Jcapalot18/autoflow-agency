@@ -1,8 +1,19 @@
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const ALLOWED_ORIGINS = new Set([
+  'https://autoflow-agency-eight.vercel.app',
+  'http://localhost:3000',
+]);
+
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('origin') || '';
+  return {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : ALLOWED_ORIGINS.values().next().value,
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  };
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const INDUSTRY_ROI: Record<string, { pain: string; roi: string; systems: string[] }> = {
   'Real Estate': {
@@ -136,6 +147,24 @@ Keep it tight — specific, concrete, no fluff. Total length: 350–450 words.`;
   return textBlock.text as string;
 }
 
+// Reject if this email already submitted a request in the last 60 seconds —
+// cheap abuse guard using the existing blueprints table (this function has
+// no other rate limiting and would otherwise let anyone spam paid
+// Anthropic + Resend calls at no cost to themselves).
+async function wasRecentlySubmitted(email: string): Promise<boolean> {
+  const dbUrl = Deno.env.get('DB_URL')!;
+  const dbKey = Deno.env.get('DB_SERVICE_KEY')!;
+  const since = new Date(Date.now() - 60 * 1000).toISOString();
+
+  const resp = await fetch(
+    `${dbUrl}/rest/v1/blueprints?email=eq.${encodeURIComponent(email)}&created_at=gte.${encodeURIComponent(since)}&select=id&limit=1`,
+    { headers: { 'apikey': dbKey, 'Authorization': `Bearer ${dbKey}` } }
+  );
+  if (!resp.ok) return false; // fail open — don't block legitimate submissions on a check failure
+  const rows = await resp.json();
+  return Array.isArray(rows) && rows.length > 0;
+}
+
 async function saveToDb(name: string, email: string, industry: string, blueprint: string): Promise<void> {
   const dbUrl = Deno.env.get('DB_URL')!;
   const dbKey = Deno.env.get('DB_SERVICE_KEY')!;
@@ -199,6 +228,8 @@ async function sendBlueprintEmail(name: string, email: string, industry: string,
 }
 
 Deno.serve(async (req: Request) => {
+  const CORS = corsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
   }
@@ -212,13 +243,19 @@ Deno.serve(async (req: Request) => {
   try {
     const { name, email, industry } = await req.json();
 
-    if (!name || !email || !industry) {
-      return new Response(JSON.stringify({ error: 'name, email, and industry are required' }), {
+    if (!name || !email || !industry || !EMAIL_RE.test(email)) {
+      return new Response(JSON.stringify({ error: 'A valid name, email, and industry are required' }), {
         status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
 
-    const blueprint = await generateBlueprint(name, email.includes('@') ? industry : industry);
+    if (await wasRecentlySubmitted(email)) {
+      return new Response(JSON.stringify({ error: 'A blueprint was already requested for this email. Try again in a minute.' }), {
+        status: 429, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const blueprint = await generateBlueprint(name, industry);
 
     await saveToDb(name, email, industry, blueprint);
 
@@ -230,7 +267,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('send-blueprint error:', msg);
-    return new Response(JSON.stringify({ error: 'Internal server error', detail: msg }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
