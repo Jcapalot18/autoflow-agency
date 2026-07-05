@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "agent": "node social-media-agent.js",
     "agent:test": "node social-media-agent.js test",
     "agent:monday": "node social-media-agent.js monday",
