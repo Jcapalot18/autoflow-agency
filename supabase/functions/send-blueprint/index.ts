@@ -15,6 +15,23 @@ function corsHeaders(req: Request): Record<string, string> {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Hard caps on user-supplied text — these are forwarded straight into the
+// Anthropic prompt and stored in the DB. Without a limit, a single request
+// with a huge `name`/`industry` string would inflate Anthropic input-token
+// cost and could blow past the model's context window with attacker-
+// controlled data.
+const MAX_NAME_LEN = 100;
+const MAX_INDUSTRY_LEN = 60;
+const MAX_EMAIL_LEN = 254; // RFC 5321 max mailbox length
+
+function getClientIp(req: Request): string | null {
+  // Supabase Edge Functions run behind a proxy — x-forwarded-for is the
+  // standard way to get the real client IP. Take the first (client) hop.
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip');
+}
+
 const INDUSTRY_ROI: Record<string, { pain: string; roi: string; systems: string[] }> = {
   'Real Estate': {
     pain: 'losing listings to agents who respond faster',
@@ -165,7 +182,26 @@ async function wasRecentlySubmitted(email: string): Promise<boolean> {
   return Array.isArray(rows) && rows.length > 0;
 }
 
-async function saveToDb(name: string, email: string, industry: string, blueprint: string): Promise<void> {
+// Reject if this IP has already made several requests in the last hour —
+// closes the gap where an attacker rotates email addresses from one IP to
+// get around the per-email guard above and still spam paid API calls.
+async function ipRateLimited(ip: string | null): Promise<boolean> {
+  if (!ip) return false; // no IP available — fail open, nothing to key on
+  const dbUrl = Deno.env.get('DB_URL')!;
+  const dbKey = Deno.env.get('DB_SERVICE_KEY')!;
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const IP_LIMIT_PER_HOUR = 5;
+
+  const resp = await fetch(
+    `${dbUrl}/rest/v1/blueprints?ip_address=eq.${encodeURIComponent(ip)}&created_at=gte.${encodeURIComponent(since)}&select=id&limit=${IP_LIMIT_PER_HOUR}`,
+    { headers: { 'apikey': dbKey, 'Authorization': `Bearer ${dbKey}` } }
+  );
+  if (!resp.ok) return false; // fail open — don't block legitimate submissions on a check failure
+  const rows = await resp.json();
+  return Array.isArray(rows) && rows.length >= IP_LIMIT_PER_HOUR;
+}
+
+async function saveToDb(name: string, email: string, industry: string, blueprint: string, ip: string | null): Promise<void> {
   const dbUrl = Deno.env.get('DB_URL')!;
   const dbKey = Deno.env.get('DB_SERVICE_KEY')!;
 
@@ -177,7 +213,7 @@ async function saveToDb(name: string, email: string, industry: string, blueprint
       'Authorization': `Bearer ${dbKey}`,
       'Prefer': 'return=minimal',
     },
-    body: JSON.stringify({ name, email, industry, blueprint_content: blueprint }),
+    body: JSON.stringify({ name, email, industry, blueprint_content: blueprint, ip_address: ip }),
   });
 
   if (!dbResp.ok) {
@@ -243,11 +279,17 @@ Deno.serve(async (req: Request) => {
   try {
     const { name, email, industry } = await req.json();
 
-    if (!name || !email || !industry || !EMAIL_RE.test(email)) {
+    if (
+      !name || !email || !industry || !EMAIL_RE.test(email) ||
+      typeof name !== 'string' || typeof industry !== 'string' || typeof email !== 'string' ||
+      name.length > MAX_NAME_LEN || industry.length > MAX_INDUSTRY_LEN || email.length > MAX_EMAIL_LEN
+    ) {
       return new Response(JSON.stringify({ error: 'A valid name, email, and industry are required' }), {
         status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
+
+    const ip = getClientIp(req);
 
     if (await wasRecentlySubmitted(email)) {
       return new Response(JSON.stringify({ error: 'A blueprint was already requested for this email. Try again in a minute.' }), {
@@ -255,9 +297,15 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (await ipRateLimited(ip)) {
+      return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+        status: 429, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
     const blueprint = await generateBlueprint(name, industry);
 
-    await saveToDb(name, email, industry, blueprint);
+    await saveToDb(name, email, industry, blueprint, ip);
 
     await sendBlueprintEmail(name, email, industry, blueprint);
 

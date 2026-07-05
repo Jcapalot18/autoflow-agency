@@ -6,3 +6,7 @@ generated-images/
 agent-state.json
 test-*.png
 supabase/.temp/
+
+# Local Claude Code settings can contain locally-exported secrets
+# (e.g. one-off env vars pasted into allowlisted commands) — never track these.
+.claude/settings.local.json
