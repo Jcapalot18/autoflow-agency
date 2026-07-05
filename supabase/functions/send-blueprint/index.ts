@@ -24,6 +24,34 @@ const MAX_NAME_LEN = 100;
 const MAX_INDUSTRY_LEN = 60;
 const MAX_EMAIL_LEN = 254; // RFC 5321 max mailbox length
 
+// Application-level cap on the raw request body. Supabase Edge Functions
+// (Deno) already enforce a platform-level limit, but an explicit check here
+// means oversized bodies are rejected before we even attempt to parse JSON
+// or touch the fields below — cheap defense in depth.
+const MAX_BODY_BYTES = 10_000; // generous for a 3-field form, nowhere near real payload sizes
+
+// Fields the frontend form is allowed to send. Any request carrying a key
+// outside this set is rejected outright rather than silently ignored — this
+// closes the gap where an attacker probes the endpoint with extra fields to
+// see if any get forwarded unsanitized into the prompt, DB row, or elsewhere.
+const ALLOWED_FIELDS = new Set(['name', 'email', 'industry']);
+
+type Outcome = 'success' | 'rejected_invalid' | 'rejected_rate_limited' | 'rejected_body' | 'error';
+
+// Structured, single-line log so entries are easy to grep/filter in the
+// Supabase Functions dashboard — distinguishes successful sends from
+// rejected/rate-limited/errored requests instead of relying only on
+// scattered console.error calls.
+function logInvocation(outcome: Outcome, ip: string | null, detail?: string): void {
+  console.log(JSON.stringify({
+    fn: 'send-blueprint',
+    ts: new Date().toISOString(),
+    ip: ip || 'unknown',
+    outcome,
+    ...(detail ? { detail } : {}),
+  }));
+}
+
 function getClientIp(req: Request): string | null {
   // Supabase Edge Functions run behind a proxy — x-forwarded-for is the
   // standard way to get the real client IP. Take the first (client) hop.
@@ -276,28 +304,67 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  try {
-    const { name, email, industry } = await req.json();
+  const ip = getClientIp(req);
 
-    if (
-      !name || !email || !industry || !EMAIL_RE.test(email) ||
-      typeof name !== 'string' || typeof industry !== 'string' || typeof email !== 'string' ||
-      name.length > MAX_NAME_LEN || industry.length > MAX_INDUSTRY_LEN || email.length > MAX_EMAIL_LEN
-    ) {
+  try {
+    const rawBody = await req.text();
+
+    if (rawBody.length > MAX_BODY_BYTES) {
+      logInvocation('rejected_body', ip, `body too large: ${rawBody.length} bytes`);
+      return new Response(JSON.stringify({ error: 'Request body too large' }), {
+        status: 413, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch {
+      logInvocation('rejected_body', ip, 'invalid JSON');
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      logInvocation('rejected_invalid', ip, 'body is not an object');
       return new Response(JSON.stringify({ error: 'A valid name, email, and industry are required' }), {
         status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
 
-    const ip = getClientIp(req);
+    const bodyObj = parsed as Record<string, unknown>;
+    const unexpectedKeys = Object.keys(bodyObj).filter((k) => !ALLOWED_FIELDS.has(k));
+    if (unexpectedKeys.length > 0) {
+      logInvocation('rejected_invalid', ip, `unexpected fields: ${unexpectedKeys.join(',')}`);
+      return new Response(JSON.stringify({ error: 'Unexpected fields in request body' }), {
+        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { name, email, industry } = bodyObj as { name?: unknown; email?: unknown; industry?: unknown };
+
+    if (
+      !name || !email || !industry ||
+      typeof name !== 'string' || typeof industry !== 'string' || typeof email !== 'string' ||
+      !EMAIL_RE.test(email) ||
+      name.length > MAX_NAME_LEN || industry.length > MAX_INDUSTRY_LEN || email.length > MAX_EMAIL_LEN
+    ) {
+      logInvocation('rejected_invalid', ip, 'failed field validation');
+      return new Response(JSON.stringify({ error: 'A valid name, email, and industry are required' }), {
+        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (await wasRecentlySubmitted(email)) {
+      logInvocation('rejected_rate_limited', ip, 'duplicate email within 60s');
       return new Response(JSON.stringify({ error: 'A blueprint was already requested for this email. Try again in a minute.' }), {
         status: 429, headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
 
     if (await ipRateLimited(ip)) {
+      logInvocation('rejected_rate_limited', ip, 'ip over hourly limit');
       return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
         status: 429, headers: { ...CORS, 'Content-Type': 'application/json' },
       });
@@ -309,11 +376,14 @@ Deno.serve(async (req: Request) => {
 
     await sendBlueprintEmail(name, email, industry, blueprint);
 
+    logInvocation('success', ip);
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    logInvocation('error', ip, msg);
     console.error('send-blueprint error:', msg);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...CORS, 'Content-Type': 'application/json' },

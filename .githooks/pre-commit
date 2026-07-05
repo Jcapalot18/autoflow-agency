@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Lightweight pre-commit secret scan.
+#
+# Blocks the commit if anything staged looks like a live credential. This
+# exists because a live Stripe secret key was previously found sitting
+# unstaged in this exact repo (caught by hand, not by tooling) — this hook
+# is a cheap automated backstop so that can't slip into a commit silently.
+#
+# Enable it once per clone with:
+#   npm install
+# (the package.json "prepare" script points git at this directory)
+#
+# This is intentionally simple (grep over staged diffs, no dependencies) —
+# it is a backstop, not a replacement for not committing secrets in the
+# first place, and it can false-positive/negative. If it blocks a
+# legitimate commit, fix the offending line (move the value to an
+# untracked .env file) rather than bypassing the hook.
+
+set -euo pipefail
+
+# Only scan added/modified lines in staged files, not the whole file — keeps
+# noise down and skips lines that were already present before this commit.
+staged_diff="$(git diff --cached -U0 --diff-filter=ACM -- . ':(exclude)package-lock.json')"
+
+if [ -z "$staged_diff" ]; then
+  exit 0
+fi
+
+added_lines="$(echo "$staged_diff" | grep -E '^\+' | grep -Ev '^\+\+\+')"
+
+if [ -z "$added_lines" ]; then
+  exit 0
+fi
+
+# Patterns for common live secret formats. Kept conservative to avoid
+# constant false positives on placeholder values like
+# "your_api_key"/"YOUR_ID" already used throughout .env.example.
+PATTERNS=(
+  'sk_live_[0-9A-Za-z]+'                # Stripe live secret key
+  'rk_live_[0-9A-Za-z]+'                # Stripe live restricted key
+  'AKIA[0-9A-Z]{16}'                    # AWS access key ID
+  '-----BEGIN [A-Z ]*PRIVATE KEY-----'  # PEM private key
+  'eyJhbGciOi[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}' # raw JWT (service role / access tokens)
+  'xox[baprs]-[0-9A-Za-z-]+'            # Slack token
+  'ghp_[0-9A-Za-z]{36}'                 # GitHub personal access token
+  'AIza[0-9A-Za-z_-]{35}'               # Google API key
+)
+
+found=0
+for pattern in "${PATTERNS[@]}"; do
+  matches="$(echo "$added_lines" | grep -E -- "$pattern" || true)"
+  if [ -n "$matches" ]; then
+    echo "pre-commit: possible secret matching pattern '$pattern' in staged changes:"
+    echo "$matches" | sed 's/^/  /'
+    found=1
+  fi
+done
+
+if [ "$found" -eq 1 ]; then
+  echo ""
+  echo "Commit blocked: staged changes look like they contain a live credential."
+  echo "If this is a false positive, adjust .githooks/pre-commit; otherwise remove the secret and use an untracked .env file instead."
+  exit 1
+fi
+
+exit 0
