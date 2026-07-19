@@ -13,7 +13,7 @@
     "agent:thursday": "node social-media-agent.js thursday"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.1",
+    "@anthropic-ai/sdk": "^0.112.3",
     "@napi-rs/canvas": "^1.0.2",
     "dotenv": "^17.4.2",
     "node-cron": "^4.6.0",
